@@ -31,14 +31,20 @@
         </label>
 
         <label class="field">
-          <span>모임 날짜</span>
-          <input v-model="meetingDate" type="text" placeholder="예: 2026-07-20" />
-        </label>
+  <span>모임 날짜</span>
+  <div class="input-with-icon">
+    <span class="input-icon" aria-hidden="true">📅</span>
+    <input v-model="meetingDate" type="date" :min="minDate" />
+  </div>
+</label>
 
-        <label class="field">
-          <span>모임 시간</span>
-          <input v-model="meetingTime" type="text" placeholder="예: 오전 7:00" />
-        </label>
+<label class="field">
+  <span>모임 시간</span>
+  <div class="input-with-icon">
+    <span class="input-icon" aria-hidden="true">⏰</span>
+    <input v-model="meetingTime" type="time" step="600" />
+  </div>
+</label>
 
         <label class="field">
           <span>모집 인원</span>
@@ -97,7 +103,11 @@ const meetingTime = ref('')
 const maxParticipants = ref('')
 const difficulty = ref('초급')
 const meetingPlace = ref('')
+const today = new Date()
 
+const minDate = `${today.getFullYear()}-${String(
+  today.getMonth() + 1
+).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 /**
  * 등록 버튼을 눌렀을 때 실행됩니다.
  * - 제목, 내용, 비밀번호는 필수입니다.
@@ -248,7 +258,50 @@ button {
   background: #e5e7eb;
   color: #111827;
 }
+.input-with-icon {
+  position: relative;
+}
 
+.input-with-icon input {
+  padding-left: 42px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: #2563eb;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
 @media (max-width: 640px) {
   .grid {
     grid-template-columns: 1fr;
