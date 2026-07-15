@@ -24,35 +24,44 @@
 
       <!-- Main layout: map + sidebar -->
       <div class="content-layout">
-        <section id="map-section" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
-        <div class="panel-head">
-            <div>
-            <p class="eyebrow">부산 비치런</p>
+        <section id="courses" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
+        <div class="panel-top">
+        <div>
             <h2>부산 비치런 지도</h2>
             <p class="panel-copy">선택한 코스의 출발지, 중간 지점, 도착지가 지도 위에 표시됩니다.</p>
-            </div>
-
-            <div class="panel-actions">
-            <button class="btn btn-primary" @click="toggleMapLarge">
-                {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
-            </button>
-            </div>
+        </div>
+        <button class="btn btn-primary" @click="toggleMapLarge">
+            {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
+        </button>
+  
         </div>
 
         <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
 
         <div class="map-card">
-            <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" />
+            <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" :large="mapLarge" />
         </div>
 
+<<<<<<< HEAD
           <section class="community-section">
           <Transition name="page-transition" mode="out-in" appear>
             <component :is="communityView" :key="currentHash" />
           </Transition>
+=======
+          <section id="community" class="community-section">
+            <BoardWrite v-if="currentHash === '#/write'" />
+            <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
+            <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
+            <BoardList v-else />
+>>>>>>> f17eeea57b2e15e0aa90c0de4879355d84dd3136
         </section>
         </section>
 
         <aside class="sidebar-panel">
+
+            <div class="popup-card weather-card">
+            <WeatherDashBoard />
+            </div>
           <div id="hall" class="popup-card ranking-card">
             <p class="card-label">🏆 부산 명예의 전당</p>
             <h3>TOP 3 러너</h3>
@@ -108,10 +117,6 @@
               </div>
             </div>
           </div>
-
-          <div class="popup-card weather-card">
-            <WeatherDashBoard />
-        </div>
         </aside>
       </div>
 
@@ -340,6 +345,7 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 }
 
 .weather-card {
+  width: 100%;
   background: linear-gradient(180deg, #ffffff, #f7f9ff);
   border: 1px solid rgba(30,136,255,0.14);
   border-radius: 24px;
@@ -347,4 +353,27 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
   box-shadow: 0 20px 48px rgba(16,40,90,0.06);
 }
 
+.map-panel {
+  transition: all .3s ease;
+}
+
+.map-panel--large {
+  min-height: 740px;
+}
+
+.map-panel .map-card {
+  min-height: 520px;
+  transition: min-height .3s ease;
+}
+
+.map-panel--large .map-card {
+  min-height: 760px;
+}
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
 </style>

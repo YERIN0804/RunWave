@@ -1,13 +1,17 @@
 <template>
-  <div id="map" ref="mapEl"></div>
+  <div id="map" ref="mapEl" :style="{ height: heightValue }"></div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch, nextTick, defineExpose } from "vue";
+import { onMounted, onUnmounted, watch, nextTick, defineExpose, computed } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const props = defineProps({ selectedCourse: Object });
+const props = defineProps({
+   selectedCourse: Object,
+    large: Boolean });
+const heightValue = computed(() => (props.large ? "760px" : "520px"));    
+    
 let map = null;
 const markerLayer = L.layerGroup();
 
