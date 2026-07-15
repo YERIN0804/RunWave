@@ -46,10 +46,9 @@
         </div>
 
           <section class="community-section">
-            <BoardWrite v-if="currentHash === '#/write'" />
-            <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
-            <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
-            <BoardList v-else />
+          <Transition name="page-transition" mode="out-in" appear>
+            <component :is="communityView" :key="currentHash" />
+          </Transition>
         </section>
         </section>
 
@@ -162,6 +161,13 @@ function formatShortDate(iso){
 }
 
 const currentHash = ref(location.hash || '#/');
+const communityView = computed(() => {
+  if (currentHash.value.startsWith('#/write')) return BoardWrite;
+  if (currentHash.value.startsWith('#/post/')) return BoardDetail;
+  if (currentHash.value.startsWith('#/edit/')) return BoardEdit;
+  return BoardList;
+});
+
 function updateHash() { currentHash.value = location.hash || '#/'; loadPosts(); }
 onMounted(() => {
   window.addEventListener('hashchange', updateHash);

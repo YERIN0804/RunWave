@@ -514,15 +514,15 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-  animation: cardFadeIn 0.45s ease both;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease;
+  animation: cardFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--card-delay, 0ms);
   cursor: pointer;
 }
 
 .post-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.12);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 18px 38px rgba(37, 99, 235, 0.16);
   border-color: rgba(37, 99, 235, 0.22);
 }
 
@@ -725,18 +725,18 @@ onBeforeUnmount(() => {
 
 .card-list-enter-active,
 .card-list-leave-active {
-  transition: all 0.25s ease;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .card-list-enter-from,
 .card-list-leave-to {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(16px);
 }
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .fade-enter-from,
