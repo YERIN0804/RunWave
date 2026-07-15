@@ -1,3 +1,61 @@
+const INITIAL_POSTS = [
+  {
+    id: 'dummy-1',
+    title: '해운대 바다뷰 8km 함께 달리실 분',
+    recruitmentTitle: '해운대 바다뷰 8km 함께 달리실 분',
+    content: '7월 17일 오전 7시 해운대 입구에서 출발합니다. 초급~중급 러너 환영!',
+    description: '7월 17일 오전 7시 해운대 입구에서 출발합니다. 초급~중급 러너 환영!',
+    password: '1234',
+    courseName: '해운대 해변 코스',
+    meetingDate: '2026-07-17',
+    meetingTime: '07:00',
+    maxParticipants: 6,
+    difficulty: '초급',
+    meetingPlace: '해운대 입구',
+    views: 24,
+    likes: 12,
+    createdAt: '2026-07-14T09:00:00.000Z',
+    updatedAt: null,
+  },
+  {
+    id: 'dummy-2',
+    title: '송정 서핑비치 5km 러닝 크루',
+    recruitmentTitle: '송정 서핑비치 5km 러닝 크루',
+    content: '저녁 6시 송정 서핑비치에서 가볍게 달릴 분을 구합니다. 페이스 맞춰 달릴게요.',
+    description: '저녁 6시 송정 서핑비치에서 가볍게 달릴 분을 구합니다. 페이스 맞춰 달릴게요.',
+    password: '4321',
+    courseName: '송정 해안 코스',
+    meetingDate: '2026-07-18',
+    meetingTime: '18:00',
+    maxParticipants: 4,
+    difficulty: '중급',
+    meetingPlace: '송정 서핑비치 입구',
+    views: 18,
+    likes: 7,
+    createdAt: '2026-07-14T12:00:00.000Z',
+    updatedAt: null,
+  },
+  {
+    id: 'dummy-3',
+    title: '광안리 야간 10km 러닝 메이트',
+    recruitmentTitle: '광안리 야간 10km 러닝 메이트',
+    content: '광안리 해변을 따라 야간 러닝을 함께할 분! 페이스 5분/km 내외.',
+    description: '광안리 해변을 따라 야간 러닝을 함께할 분! 페이스 5분/km 내외.',
+    password: '0000',
+    courseName: '광안리 야간 코스',
+    meetingDate: '2026-07-19',
+    meetingTime: '21:00',
+    maxParticipants: 8,
+    difficulty: '고급',
+    meetingPlace: '광안리 광장',
+    views: 32,
+    likes: 15,
+    createdAt: '2026-07-14T15:00:00.000Z',
+    updatedAt: null,
+  },
+];
+
+
 // src/services/postService.js
 // 게시글을 localStorage에 저장하고 관리하는 유틸 함수들입니다.
 // Vue 컴포넌트에서 import 해서 사용하세요.
@@ -109,24 +167,24 @@ function normalizePost(post) {
  */
 export function getPosts() {
   const json = localStorage.getItem(STORAGE_KEY)
-  if (!json) return []
+  if (!json) {
+    savePosts(INITIAL_POSTS)
+    return INITIAL_POSTS.map(normalizePost)
+  }
 
   try {
     const parsed = JSON.parse(json)
-
-    if (!Array.isArray(parsed)) return []
+    if (!Array.isArray(parsed)) return INITIAL_POSTS.map(normalizePost)
 
     const posts = parsed
       .map((post) => normalizePost(post))
       .filter(Boolean)
 
-    // 최신 글이 위에 오도록 정렬
     posts.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1))
-
     return posts
   } catch (e) {
     console.error('Failed to parse posts from localStorage', e)
-    return []
+    return INITIAL_POSTS.map(normalizePost)
   }
 }
 

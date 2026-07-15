@@ -37,6 +37,13 @@
         </div>
 
         <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
+        <div class="course-summary">
+            <div class="course-meta">
+                <strong>{{ selectedCourse.distance }}</strong>
+                <span>{{ selectedCourse.title.replace('🏃 ', '') }}</span>
+            </div>
+            <p class="course-description">{{ selectedCourse.description }}</p>
+        </div>
 
         <div class="map-card">
             <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" :large="mapLarge" />
@@ -361,5 +368,31 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
   align-items: center;
   gap: 16px;
   margin-bottom: 18px;
+}
+.course-summary {
+  margin: 18px 0 12px;
+  padding: 16px 18px;
+  background: rgba(30,136,255,0.06);
+  border-radius: 18px;
+  border: 1px solid rgba(30,136,255,0.12);
+}
+
+.course-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.course-meta strong {
+  font-size: 1rem;
+  color: #1e88ff;
+}
+
+.course-description {
+  margin: 0;
+  color: #56627e;
+  line-height: 1.6;
 }
 </style>
