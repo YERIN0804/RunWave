@@ -14,15 +14,17 @@ const touristSpots = ref([]) // 실제 데이터로 채울 경우 loadAllLocalDa
 
 <template>
 
-<BeachRunView />
+
   <!-- <HelloWorld /> -->
    <header class="app-header">
       <h1>부산 러닝 메이트 🏃‍♂️</h1>
+      <h1>--- 여기 제목이나 로고 적을거에요 ! ---</h1>
     </header>
 
     <main class="app-content">
-      <BeachMap :runningSpots="touristSpots" />
-      
+      <!-- <BeachMap :runningSpots="touristSpots" /> -->
+      <BeachRunView />
+
       <section class="weather-section">
         <WeatherDashBoard />
       </section>
