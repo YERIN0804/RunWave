@@ -10,11 +10,13 @@
     </div>
 
     <nav class="nav">
-        <button class="nav-btn">🏠 홈</button>
-        <button class="nav-btn">👥 러닝 크루</button>
-        <button class="nav-btn">🗺️ 코스 추천</button>
-        <button class="nav-btn">🏆 명예의 전당</button>
-        <button class="nav-btn">📊 내 기록</button>
+<nav class="nav">
+  <button class="nav-btn" @click="scrollTo('top')">🏠 홈</button>
+    <button class="nav-btn" @click="scrollTo('courses')">🗺️ 코스 추천</button>
+  <button class="nav-btn" @click="scrollTo('community')">👥 러닝 크루</button>
+  <button class="nav-btn" @click="scrollTo('hall')">🏆 명예의 전당</button>
+  <button class="nav-btn" @click="scrollTo('records')">📊 내 기록</button>
+</nav>
     </nav>
     </header>
 
@@ -100,6 +102,13 @@
                 <div class="tile-label">런 횟수</div>
                 <div class="tile-value">{{ runCount }}</div>
               </div>
+
+              <div class="record-entry">
+                <input v-model="newLogDate" type="date" />
+                <input v-model="newLogDistance" type="number" placeholder="거리 km" />
+                <input v-model="newLogTime" type="number" placeholder="시간 분" />
+                <button class="btn btn-primary" @click="addRunLog">기록 추가</button>
+                </div>
             </div>
 
             <div class="sparkline-wrap">
@@ -228,6 +237,8 @@ const maxLast7 = computed(() => Math.max(...last7.value, 1));
 
 // apply action for crew card
 function apply(id){ alert('참여 신청(더미) - id: '+id); }
+
+
 </script>
 
 <style scoped>
