@@ -46,5 +46,18 @@ onUnmounted(() => { if (map) map.remove(); });
 </script>
 
 <style>
-#map { width: 100%; height: 500px; border-radius: 20px; }
+#map {
+  width: 100%;
+  height: 520px;
+  border-radius: 24px;
+}
+@media (max-width: 1080px) {
+  .content-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-panel {
+    position: static;
+  }
+}
 </style>
