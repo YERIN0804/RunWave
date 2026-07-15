@@ -6,6 +6,17 @@
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 
+const mapInstance = ref(null); // 지도 객체
+
+// 부모 컴포넌트에서 호출할 수 있도록 expose 해야 합니다.
+const invalidateSize = () => {
+  if (mapInstance.value) {
+    mapInstance.value.invalidateSize();
+  }
+};
+
+defineExpose({ invalidateSize });
+
 const props = defineProps({
   selectedCourse: Object
 });
