@@ -28,14 +28,19 @@
     <!-- 왼쪽 메인 영역 -->
     <section id="courses" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
       <div class="panel-top">
-        <div>
-          <h2>부산 비치런 지도</h2>
-          <p class="panel-copy">선택한 코스의 출발지, 중간 지점, 도착지가 지도 위에 표시됩니다.</p>
+        <div class="panel-header">
+          <div class="badge-running">🔥 부산 러닝 라이프</div>
+          <h2>부산의 파도를 따라, RunWave</h2>
+          <p class="panel-copy">
+            광안리, 해운대, 을숙도까지! 
+            <strong>지금 당신의 러닝 메이트와 함께 달릴 최고의 코스를 확인하세요.</strong>
+          </p>
         </div>
-        <button class="btn btn-primary" @click="toggleMapLarge">
-          {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
-        </button>
-      </div>
+    
+    <button class="btn btn-primary toggle-btn" @click="toggleMapLarge">
+      {{ mapLarge ? '📍 지도 축소하기' : '🗺️ 크게 보기' }}
+    </button>
+  </div>
 
       <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
       
@@ -206,7 +211,7 @@ import WeatherDashBoard from '../components/WeatherDashBoard.vue';
 
 import { getStats, getLogs, appendLog } from '../utils/rankingStorage';
 import { initialRankings } from '../data/rankingDummy';
-import { courses } from '../data/runningCourses';
+import { loadRunningCourses } from '../utils/courseBuilder'; // 추가
 
 // 게시글 서비스 (로컬스토리지)
 import { getPosts } from '../services/postService.js';
@@ -234,21 +239,22 @@ function formatShortDate(iso){
 
 const currentHash = ref(location.hash || '#/');
 function updateHash() { currentHash.value = location.hash || '#/'; loadPosts(); }
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('hashchange', updateHash);
-  // initial load
+  courses.value = await loadRunningCourses();
+  selectedCourse.value = courses.value[0] || null;
   loadPosts();
 });
 onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash));
 
 // courses / map
-const selectedCourse = ref(courses[0] || null);
+const courses = ref([]);
+const selectedCourse = ref(null); // 이 부분이 빠져있으면 오류 발생
+
 function selectCourse(course){
   selectedCourse.value = course;
-  setTimeout(()=> {
-    beachMapRef.value?.invalidateSize?.();
-    console.log('[HomeView] selectedCourse set', course?.id || course?.title);
-  }, 180);
+// HomeView.vue
+setTimeout(() => beachMapRef.value?.relayout?.(), 240);
 }
 function toggleMapLarge(){
   mapLarge.value = !mapLarge.value;
@@ -368,25 +374,7 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 </script>
 
 <style scoped>
-.app-header {
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  width: 100vw;
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:space-between;
-  align-items:center;
-  gap:18px;
-  padding:18px 28px;
-  border-radius:0;
-  background: linear-gradient(90deg, rgba(30,136,255,0.08), rgba(255,255,255,0.98));
-  border-bottom: 1px solid rgba(30,136,255,0.12);
-  box-shadow: 0 6px 18px rgba(16,40,90,0.06);
-  margin-bottom: 22px;
-}
+
 
 .brand-text h1 {
   margin:0;
@@ -505,13 +493,98 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 .map-panel--large .map-card {
   min-height: 760px;
 }
+
 .panel-top {
+  padding: 40px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
 }
+
+.panel-header .sub-title {
+  color: #94a3b8; /* 차분한 회색조 */
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+}
+
+.panel-header h2 {
+  font-size: 1.6rem;
+  margin: 8px 0;
+  color: #1e293b;
+}
+
+/* 자연스러운 파도 느낌의 짧은 선 */
+.divider {
+  width: 50px;
+  height: 4px;
+  background: linear-gradient(90deg, #60a5fa, #c7d2fe);
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+.panel-copy {
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.toggle-btn {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  background: #e2e8f0;
+}
+
+.badge-running {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.panel-header h2 {
+  font-size: 1.8rem;
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.panel-copy {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.toggle-btn {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-btn:hover {
+  background: #555;
+}
+
 .course-summary {
   margin: 18px 0 12px;
   padding: 16px 18px;
