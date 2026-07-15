@@ -13,6 +13,12 @@
       <section class="weather-section">
         <WeatherDashBoard />
       </section>
+
+      <BoardWrite v-if="currentHash === '#/write'" />
+      <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
+      <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
+      <BoardList v-else />
+
       <RunChat/>
       
       <div class="main-page">
@@ -26,6 +32,8 @@
       <p>© 2026 부산 러닝 메이트. All rights reserved.</p>
     </footer>
   </div>
+
+
 </template>
 
 <script setup>
@@ -33,6 +41,25 @@ import { ref } from 'vue'
 import BeachRunView from "../views/BeachRunView.vue";
 import RunChat from '../components/RunChat.vue';
 import WeatherDashBoard from '../components/WeatherDashBoard.vue';
+import {onMounted, onBeforeUnmount } from 'vue'
+import BoardList from '../components/BoardList.vue'
+import BoardWrite from '../components/BoardWrite.vue'
+import BoardDetail from '../components/BoardDetail.vue'
+import BoardEdit from '../components/BoardEdit.vue'
+
+const currentHash = ref(location.hash || '#/')
+
+function updateHash() {
+  currentHash.value = location.hash || '#/'
+}
+
+onMounted(() => {
+  window.addEventListener('hashchange', updateHash)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('hashchange', updateHash)
+})
 
 
 const touristSpots = ref([])
