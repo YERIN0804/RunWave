@@ -123,18 +123,12 @@
         </aside>
       </div>
 
-      <!-- Community + crew carousel -->
+      <!-- Community area: 중앙에 BoardWrite (작성), 오른쪽은 모집글 캐러셀 -->
       <section id="community" class="community-row">
         <div class="popup-card community-form">
-          <div class="card-label">💬 러닝 크루 모집</div>
-          <form @submit.prevent="postCrew">
-            <input v-model="postForm.title" placeholder="모집 제목" required />
-            <textarea v-model="postForm.body" placeholder="내용" rows="4" required></textarea>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-              <button class="btn btn-primary" type="submit">등록</button>
-              <button class="btn btn-ghost" type="button" @click="clearForm">취소</button>
-            </div>
-          </form>
+          <div class="card-label">러닝 크루 모집 작성</div>
+          <!-- 중앙에 BoardWrite 컴포넌트 삽입 -->
+          <BoardWrite />
         </div>
 
         <div class="popup-card crew-list">
@@ -142,9 +136,9 @@
           <div class="crew-carousel">
             <div v-for="p in posts" :key="p.id" class="crew-card">
               <strong>{{ p.title }}</strong>
-              <div class="crew-body">{{ p.body }}</div>
+              <div class="crew-body">{{ p.description || p.content }}</div>
               <div class="crew-footer">
-                <small>{{ p.date }}</small>
+                <small>{{ formatShortDate(p.createdAt) }}</small>
                 <button class="btn btn-ghost" @click="apply(p.id)">참여하기</button>
               </div>
             </div>
@@ -153,7 +147,7 @@
         </div>
       </section>
 
-      <!-- Weather and RunChat -->
+      <!-- Weather and (old) in-page community list removed (no duplicate) -->
       <section class="weather-section">
         <WeatherDashBoard />
       </section>
@@ -169,6 +163,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+
 import BoardList from '../components/BoardList.vue';
 import BoardWrite from '../components/BoardWrite.vue';
 import BoardDetail from '../components/BoardDetail.vue';
@@ -177,23 +172,41 @@ import BeachMap from '../components/BeachMap.vue';
 import CourseList from '../components/CourseList.vue';
 import RunChat from '../components/RunChat.vue';
 import WeatherDashBoard from '../components/WeatherDashBoard.vue';
+
 import { getStats, getLogs } from '../utils/rankingStorage';
 import { initialRankings } from '../data/rankingDummy';
 import { courses } from '../data/runningCourses';
+
+// 게시글 서비스 (로컬스토리지)
+import { getPosts } from '../services/postService.js';
 
 // refs / state
 const beachMapRef = ref(null);
 const mapLarge = ref(false);
 
+// community posts
+const posts = ref([]);
+function loadPosts(){ posts.value = getPosts(); }
+
+// small helper for short date
+function formatShortDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 const currentHash = ref(location.hash || '#/');
-function updateHash() { currentHash.value = location.hash || '#/'; }
-onMounted(() => window.addEventListener('hashchange', updateHash));
+function updateHash() { currentHash.value = location.hash || '#/'; loadPosts(); }
+onMounted(() => {
+  window.addEventListener('hashchange', updateHash);
+  // initial load
+  loadPosts();
+});
 onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash));
 
 // courses / map
 const selectedCourse = ref(courses[0] || null);
 function selectCourse(course){
-  // CourseList emits course object
   selectedCourse.value = course;
   setTimeout(()=> {
     beachMapRef.value?.invalidateSize?.();
@@ -243,68 +256,36 @@ const last7 = computed(() => {
 });
 const maxLast7 = computed(() => Math.max(...last7.value, 1));
 
-// posts (community)
-const posts = ref([]);
-const postForm = ref({ title: '', body: '' });
-function loadPosts(){ posts.value = JSON.parse(localStorage.getItem('crew_posts') || '[]'); }
-function savePosts(){ localStorage.setItem('crew_posts', JSON.stringify(posts.value)); }
-function postCrew(){
-  posts.value.unshift({ id: Date.now(), title: postForm.value.title, body: postForm.value.body, date: new Date().toLocaleDateString() });
-  savePosts(); postForm.value = { title: '', body: '' };
-}
-function clearForm(){ postForm.value = { title: '', body: '' }; }
+// apply action for crew card
 function apply(id){ alert('참여 신청(더미) - id: '+id); }
-
-onMounted(()=> loadPosts());
 </script>
 
 <style scoped>
-/* reuse and concise layout styling */
+/* (기존 스타일 유지) - 필요 시 style.css 에 통합하세요. */
 .app-content { width:100%; max-width:1600px; margin:0 auto; padding:16px 12px; box-sizing:border-box; }
-
-/* header */
 .app-header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px; border-radius:12px; margin-bottom:12px; background:linear-gradient(90deg, rgba(30,136,255,0.04), rgba(14,165,233,0.02)); }
 .brand { display:flex; gap:10px; align-items:center; }
 .logo { width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,#1e88ff,#42a5f5); color:#fff; display:grid; place-items:center; font-weight:700; }
-.brand-title { font-weight:800; }
-.brand-sub { font-size:12px; color:var(--muted-2); }
-
-/* nav */
 .nav { display:flex; gap:8px; }
 .nav-btn { background:transparent; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; color:var(--muted-2); }
 .nav-btn:hover{ background:rgba(30,136,255,0.06); color:var(--primary); }
 
-/* hero */
 .hero { display:flex; gap:20px; align-items:flex-start; margin-bottom:18px; }
 .hero .left { flex:1; }
 .hero-right { width:420px; }
-
-/* today card */
-.hero-today { display:flex; gap:12px; align-items:center; }
 .thumb { width:88px; height:64px; background:#eef6ff; border-radius:10px; display:flex; align-items:center; justify-content:center; }
-.today-title { font-weight:700; }
-.today-sub { color:var(--muted-2); font-size:13px; }
 
-/* layout */
 .content-layout { display:grid; grid-template-columns: minmax(0, 2.8fr) minmax(340px, 1fr); gap:28px; align-items:start; margin-bottom:20px; }
 .map-panel { background:var(--card-bg); border-radius:20px; padding:18px; box-shadow:var(--shadow-md); min-height:480px; transition:all .28s ease; }
 .map-panel--large { min-height:820px; }
 
-/* popup cards etc (reused classes exist in global style.css too) */
-.popup-card { background:var(--card-bg); border-radius:14px; padding:14px; border:1px solid var(--border); box-shadow:var(--shadow-md); }
-.sidebar-panel { display:flex; flex-direction:column; gap:16px; position:sticky; top:28px; }
-
-.course-list { margin:12px 0; }
-
-/* community row */
 .community-row { display:flex; gap:18px; margin-top:18px; flex-wrap:wrap; }
-.community-form { flex:1; min-width:280px; }
-.crew-list { flex:1.4; min-width:320px; }
+.community-form { flex:1; min-width:320px; }
+.crew-list { flex:1.2; min-width:300px; }
 .crew-carousel { display:flex; gap:12px; overflow-x:auto; padding:8px 2px; }
 .crew-card { min-width:220px; background:var(--card-bg); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:var(--shadow-md); display:flex; flex-direction:column; gap:8px; }
 .crew-footer { display:flex; justify-content:space-between; align-items:center; }
 
-/* responsive */
 @media (max-width: 1080px) {
   .content-layout { grid-template-columns: 1fr; }
   .hero { flex-direction:column; }
