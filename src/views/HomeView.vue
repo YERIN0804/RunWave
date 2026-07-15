@@ -1,31 +1,71 @@
 <template>
   <div class="app-wrap">
+    <!-- Header -->
     <header class="app-header">
-      <h1>부산 러닝 메이트 🏃‍♂️</h1>
-      <p>부산 해변 러닝을 한눈에 확인하고 기록을 관리하세요.</p>
+      <div class="brand" @click="scrollTo('top')" style="cursor:pointer">
+        <div class="logo">🌊</div>
+        <div class="brand-text">
+          <div class="brand-title">RunWave</div>
+          <div class="brand-sub">Running in Busan, Together.</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn" @click="scrollTo('top')">홈</button>
+        <button class="nav-btn" @click="scrollTo('community')">러닝 크루</button>
+        <button class="nav-btn" @click="scrollTo('courses')">코스 추천</button>
+        <button class="nav-btn" @click="scrollTo('hall')">명예의 전당</button>
+        <button class="nav-btn" @click="scrollTo('records')">내 기록</button>
+      </nav>
     </header>
 
     <main class="app-content">
+      <!-- Hero: course quick buttons + today's recommendation -->
+      <section id="top" class="hero">
+        <div class="left">
+          <h2>부산 러닝 코스 추천 한눈에 보기</h2>
+          <p>원하는 코스를 눌러 지도로 확인하세요.</p>
+
+          <div id="courses" class="course-list">
+            <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
+          </div>
+
+          <div style="margin-top:12px;">
+            <button class="btn btn-ghost" @click="toggleMapLarge">{{ mapLarge ? '지도 축소' : '지도 크게 보기' }}</button>
+          </div>
+        </div>
+
+        <div class="right hero-right">
+          <div class="popup-card">
+            <div class="hero-today">
+              <div class="thumb">이미지</div>
+              <div>
+                <div class="today-title">{{ courses[0]?.title }}</div>
+                <div class="today-sub">{{ courses[0]?.distance }}</div>
+                <div style="margin-top:8px;">
+                  <button class="btn btn-primary" @click="selectCourse(courses[0])">지도에서 보기</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main layout: map + sidebar -->
       <div class="content-layout">
-        <!-- 왼쪽: 지도 + 코스 리스트 -->
-        <section class="map-panel">
+        <section id="map-section" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
           <div class="panel-head">
             <h2>부산 비치런 지도</h2>
             <p>코스를 선택하면 지도에 표시됩니다.</p>
           </div>
 
-          <CourseList
-            :courses="courses"
-            :selectedId="selectedCourse.id"
-            @select="selectCourse"
-          />
+          <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
 
-          <BeachMap :selectedCourse="selectedCourse" />
+          <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" />
         </section>
 
-        <!-- 오른쪽: 팝업 느낌의 사이드 대시보드 -->
         <aside class="sidebar-panel">
-          <div class="popup-card ranking-card">
+          <div id="hall" class="popup-card ranking-card">
             <p class="card-label">🏆 부산 명예의 전당</p>
             <h3>TOP 3 러너</h3>
             <ul>
@@ -39,7 +79,7 @@
             </ul>
           </div>
 
-          <div class="popup-card stats-card">
+          <div class="popup-card stats-card" id="records">
             <p class="card-label">📊 내 기록</p>
             <h3>요약</h3>
 
@@ -83,215 +123,192 @@
         </aside>
       </div>
 
-      <section class="weather-section">
-        <WeatherDashBoard />
+      <!-- Community + crew carousel -->
+      <section id="community" class="community-row">
+        <div class="popup-card community-form">
+          <div class="card-label">💬 러닝 크루 모집</div>
+          <form @submit.prevent="postCrew">
+            <input v-model="postForm.title" placeholder="모집 제목" required />
+            <textarea v-model="postForm.body" placeholder="내용" rows="4" required></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-primary" type="submit">등록</button>
+              <button class="btn btn-ghost" type="button" @click="clearForm">취소</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="popup-card crew-list">
+          <div class="card-label">모집중인 러닝 크루</div>
+          <div class="crew-carousel">
+            <div v-for="p in posts" :key="p.id" class="crew-card">
+              <strong>{{ p.title }}</strong>
+              <div class="crew-body">{{ p.body }}</div>
+              <div class="crew-footer">
+                <small>{{ p.date }}</small>
+                <button class="btn btn-ghost" @click="apply(p.id)">참여하기</button>
+              </div>
+            </div>
+            <div v-if="posts.length === 0" class="crew-empty">등록된 모집글이 없습니다.</div>
+          </div>
+        </div>
       </section>
 
-      <section class="community-section">
-        <div class="community-panel popup-card">
-          <h3 class="card-label">💬 커뮤니티</h3>
-
-          <BoardWrite v-if="currentHash === '#/write'" />
-          <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
-          <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
-          <BoardList v-else />
-        </div>
+      <!-- Weather and RunChat -->
+      <section class="weather-section">
+        <WeatherDashBoard />
       </section>
 
       <RunChat />
     </main>
 
     <footer class="app-footer">
-      <p>© 2026 부산 러닝 메이트. All rights reserved.</p>
+      <p>© 2026 RunWave. All rights reserved.</p>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import BoardList from '../components/BoardList.vue';
+import BoardWrite from '../components/BoardWrite.vue';
+import BoardDetail from '../components/BoardDetail.vue';
+import BoardEdit from '../components/BoardEdit.vue';
+import BeachMap from '../components/BeachMap.vue';
+import CourseList from '../components/CourseList.vue';
+import RunChat from '../components/RunChat.vue';
+import WeatherDashBoard from '../components/WeatherDashBoard.vue';
+import { getStats, getLogs } from '../utils/rankingStorage';
+import { initialRankings } from '../data/rankingDummy';
+import { courses } from '../data/runningCourses';
 
-import BoardList from '../components/BoardList.vue'
-import BoardWrite from '../components/BoardWrite.vue'
-import BoardDetail from '../components/BoardDetail.vue'
-import BoardEdit from '../components/BoardEdit.vue'
-import BeachMap from '../components/BeachMap.vue'
-import CourseList from '../components/CourseList.vue'
-import RunChat from '../components/RunChat.vue'
-import WeatherDashBoard from '../components/WeatherDashBoard.vue'
-import { getStats, getLogs } from '../utils/rankingStorage'
-import { initialRankings } from '../data/rankingDummy'
-import { courses } from '../data/runningCourses'
+// refs / state
+const beachMapRef = ref(null);
+const mapLarge = ref(false);
 
-// simple hash-based routing for community
-const currentHash = ref(location.hash || '#/')
-function updateHash() { currentHash.value = location.hash || '#/' }
-onMounted(() => window.addEventListener('hashchange', updateHash))
-onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash))
+const currentHash = ref(location.hash || '#/');
+function updateHash() { currentHash.value = location.hash || '#/'; }
+onMounted(() => window.addEventListener('hashchange', updateHash));
+onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash));
 
-// map / courses
-const selectedCourse = ref(courses[0])
-const selectCourse = (course) => { selectedCourse.value = course }
+// courses / map
+const selectedCourse = ref(courses[0] || null);
+function selectCourse(course){
+  // CourseList emits course object
+  selectedCourse.value = course;
+  setTimeout(()=> {
+    beachMapRef.value?.invalidateSize?.();
+    console.log('[HomeView] selectedCourse set', course?.id || course?.title);
+  }, 180);
+}
+function toggleMapLarge(){
+  mapLarge.value = !mapLarge.value;
+  setTimeout(()=> beachMapRef.value?.invalidateSize?.(), 240);
+}
+function scrollTo(id){
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 // rankings / stats
 const top3 = computed(() =>
   [...initialRankings].sort((a, b) => b.distance - a.distance).slice(0, 3)
-)
+);
 
-const statsDay = computed(() => getStats('day'))
-const statsWeek = computed(() => getStats('week'))
-const statsMonth = computed(() => getStats('month'))
+const statsDay = computed(() => getStats('day'));
+const statsWeek = computed(() => getStats('week'));
+const statsMonth = computed(() => getStats('month'));
 
-// 보조 데이터
-const logs = computed(() => getLogs())
-const runCount = computed(() => logs.value.length)
+const logs = computed(() => getLogs());
+const runCount = computed(() => logs.value.length);
 
-// 평균 페이스 (분:초 / km)
 const avgPace = computed(() => {
-  const dist = statsMonth.value.totalDistance
-  const time = statsMonth.value.totalTime
-  if (!dist || dist <= 0) return '-'
-  const minutesPerKm = time / dist
-  const mm = Math.floor(minutesPerKm)
-  const ss = Math.round((minutesPerKm - mm) * 60)
-  return `${mm}:${String(ss).padStart(2, '0')}/km`
-})
+  const dist = statsMonth.value.totalDistance;
+  const time = statsMonth.value.totalTime;
+  if (!dist || dist <= 0) return '-';
+  const minutesPerKm = time / dist;
+  const mm = Math.floor(minutesPerKm);
+  const ss = Math.round((minutesPerKm - mm) * 60);
+  return `${mm}:${String(ss).padStart(2, '0')}/km`;
+});
 
-// 최근 7일 거리 (일자별 합계)
+// last7
 const last7 = computed(() => {
-  const now = new Date()
+  const now = new Date();
   return Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date(now)
-    d.setDate(now.getDate() - (6 - i))
-    const key = d.toISOString().slice(0, 10)
-    return logs.value
-      .filter(l => l.date === key)
-      .reduce((s, it) => s + Number(it.distance || 0), 0)
-  })
-})
-const maxLast7 = computed(() => Math.max(...last7.value, 1))
+    const d = new Date(now);
+    d.setDate(now.getDate() - (6 - i));
+    const key = d.toISOString().slice(0,10);
+    return logs.value.filter(l => l.date === key).reduce((s, it) => s + Number(it.distance || 0), 0);
+  });
+});
+const maxLast7 = computed(() => Math.max(...last7.value, 1));
+
+// posts (community)
+const posts = ref([]);
+const postForm = ref({ title: '', body: '' });
+function loadPosts(){ posts.value = JSON.parse(localStorage.getItem('crew_posts') || '[]'); }
+function savePosts(){ localStorage.setItem('crew_posts', JSON.stringify(posts.value)); }
+function postCrew(){
+  posts.value.unshift({ id: Date.now(), title: postForm.value.title, body: postForm.value.body, date: new Date().toLocaleDateString() });
+  savePosts(); postForm.value = { title: '', body: '' };
+}
+function clearForm(){ postForm.value = { title: '', body: '' }; }
+function apply(id){ alert('참여 신청(더미) - id: '+id); }
+
+onMounted(()=> loadPosts());
 </script>
 
 <style scoped>
-/* 전체 너비 확보 */
-.app-content {
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 16px 8px;
-  box-sizing: border-box;
-}
+/* reuse and concise layout styling */
+.app-content { width:100%; max-width:1600px; margin:0 auto; padding:16px 12px; box-sizing:border-box; }
 
-/* 레이아웃 */
-.content-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2.8fr) minmax(340px, 1fr);
-  gap: 30px;
-  align-items: start;
-  margin-bottom: 32px;
-}
+/* header */
+.app-header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px; border-radius:12px; margin-bottom:12px; background:linear-gradient(90deg, rgba(30,136,255,0.04), rgba(14,165,233,0.02)); }
+.brand { display:flex; gap:10px; align-items:center; }
+.logo { width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,#1e88ff,#42a5f5); color:#fff; display:grid; place-items:center; font-weight:700; }
+.brand-title { font-weight:800; }
+.brand-sub { font-size:12px; color:var(--muted-2); }
 
-/* 지도 패널 */
-.map-panel {
-  background: #fff;
-  border-radius: 28px;
-  padding: 20px;
-  box-shadow: 0 28px 72px rgba(20, 24, 54, 0.08);
-  min-height: 720px;
-}
-.panel-head h2 { margin: 0; font-size: 1.9rem; }
-.panel-head p { margin: 8px 0 20px; color: #5f657e; }
+/* nav */
+.nav { display:flex; gap:8px; }
+.nav-btn { background:transparent; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; color:var(--muted-2); }
+.nav-btn:hover{ background:rgba(30,136,255,0.06); color:var(--primary); }
 
-/* 사이드바: 따라오는 느낌 */
-.sidebar-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  position: sticky;
-  top: 28px;
-  align-self: start;
-}
+/* hero */
+.hero { display:flex; gap:20px; align-items:flex-start; margin-bottom:18px; }
+.hero .left { flex:1; }
+.hero-right { width:420px; }
 
-/* 팝업 카드 */
-.popup-card {
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 20px;
-  padding: 18px;
-  border: 1px solid rgba(15, 20, 60, 0.04);
-  box-shadow: 0 24px 64px rgba(20, 24, 54, 0.10);
-  backdrop-filter: blur(6px);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-.popup-card:hover { transform: translateY(-6px); box-shadow: 0 36px 90px rgba(20,24,54,0.14); }
+/* today card */
+.hero-today { display:flex; gap:12px; align-items:center; }
+.thumb { width:88px; height:64px; background:#eef6ff; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+.today-title { font-weight:700; }
+.today-sub { color:var(--muted-2); font-size:13px; }
 
-.card-label { display:inline-flex; gap:8px; color:#3c4a9b; font-weight:700; margin-bottom:8px; }
-.ranking-card h3, .stats-card h3 { margin:0 0 12px; font-size:1.15rem; }
+/* layout */
+.content-layout { display:grid; grid-template-columns: minmax(0, 2.8fr) minmax(340px, 1fr); gap:28px; align-items:start; margin-bottom:20px; }
+.map-panel { background:var(--card-bg); border-radius:20px; padding:18px; box-shadow:var(--shadow-md); min-height:480px; transition:all .28s ease; }
+.map-panel--large { min-height:820px; }
 
-/* 랭킹 리스트 */
-.ranking-card ul { list-style:none; padding:0; margin:0; }
-.ranking-card li {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:10px 0;
-  border-bottom:1px solid rgba(230,232,255,0.9);
-}
-.ranking-card li:last-child { border-bottom:none; }
-.rank { color:#ff7a18; font-weight:800; min-width:36px; }
-.rname { margin-left:8px; }
+/* popup cards etc (reused classes exist in global style.css too) */
+.popup-card { background:var(--card-bg); border-radius:14px; padding:14px; border:1px solid var(--border); box-shadow:var(--shadow-md); }
+.sidebar-panel { display:flex; flex-direction:column; gap:16px; position:sticky; top:28px; }
 
-/* 대시보드 타일 */
-.dashboard-tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 10px;
-  margin: 10px 0 14px;
-}
-.tile {
-  background: linear-gradient(180deg,#fff,#fbf7ff);
-  border-radius: 12px;
-  padding: 10px;
-  text-align: center;
-  box-shadow: 0 8px 20px rgba(20,24,54,0.04);
-}
-.tile-label { color:#7b7b9a; font-size:0.85rem; margin-bottom:6px; display:block; }
-.tile-value { font-weight:700; font-size:1.15rem; color:#222; }
+.course-list { margin:12px 0; }
 
-.community-section { margin-top:20px; }
-.community-panel { padding:16px; border-radius:14px; }
+/* community row */
+.community-row { display:flex; gap:18px; margin-top:18px; flex-wrap:wrap; }
+.community-form { flex:1; min-width:280px; }
+.crew-list { flex:1.4; min-width:320px; }
+.crew-carousel { display:flex; gap:12px; overflow-x:auto; padding:8px 2px; }
+.crew-card { min-width:220px; background:var(--card-bg); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:var(--shadow-md); display:flex; flex-direction:column; gap:8px; }
+.crew-footer { display:flex; justify-content:space-between; align-items:center; }
 
-
-/* 스파크라인 */
-.sparkline-wrap { margin-top: 8px; }
-.sparkline-label { color:#7f7f9c; font-size:0.85rem; margin-bottom:8px; }
-.sparkline {
-  display:flex;
-  gap:8px;
-  align-items:end;
-  height:60px;
-  padding:6px 4px;
-}
-.sparkline .bar {
-  flex:1;
-  min-width:8px;
-  background: linear-gradient(180deg,#ffceb0,#ff7a18);
-  border-radius:8px 8px 4px 4px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  position:relative;
-  transition: transform .16s ease;
-}
-.sparkline .bar:hover { transform: translateY(-6px); box-shadow:0 10px 22px rgba(34,34,60,0.12); }
-.sparkline .bar-day { position:absolute; bottom:-18px; font-size:0.72rem; color:#7f7f9c; }
-
-/* 반응형 */
+/* responsive */
 @media (max-width: 1080px) {
   .content-layout { grid-template-columns: 1fr; }
-  .sidebar-panel { position: static; }
-}
-@media (max-width: 640px) {
-  .dashboard-tiles { grid-template-columns: 1fr; }
-  .sparkline { height:48px; gap:6px; }
+  .hero { flex-direction:column; }
+  .hero-right { width:100%; }
+  .sidebar-panel { position:static; }
 }
 </style>

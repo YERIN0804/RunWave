@@ -21,3 +21,5 @@ export const initialRankings = [
   { id: 19, name: "용두산공원", distance: 48.9, time: 300 },
   { id: 20, name: "부산역스프린터", distance: 45.6, time: 280 }
 ];
+
+export default initialRankings;
