@@ -34,7 +34,14 @@ onMounted(() => {
   if (props.selectedCourse) updateMap(props.selectedCourse);
 });
 
-watch(() => props.selectedCourse, updateMap);
+watch(
+  ()=>props.selectedCourse,
+  updateMap,
+  {
+    deep:true,
+    immediate:true
+  }
+);
 onUnmounted(() => { if (map) map.remove(); });
 </script>
 
