@@ -6,5 +6,5 @@ import RunChat from './components/RunChat.vue';
 <template>
   <HelloWorld />
   <!-- <BeachMap :runningSpots="touristSpots" /> -->
-   <!-- <RunChat/> -->
+   <RunChat/>
 </template>
