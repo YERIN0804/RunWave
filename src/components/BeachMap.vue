@@ -1,81 +1,151 @@
 <template>
-  <div id="map" ref="mapEl" :style="{ height: heightValue }"></div>
+  <div ref="mapContainer" class="map-container"></div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch, nextTick, defineExpose, computed } from "vue";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
-   selectedCourse: Object,
-    large: Boolean });
-const heightValue = computed(() => (props.large ? "760px" : "520px"));    
-    
-let map = null;
-const markerLayer = L.layerGroup();
-
-const getIcon = () => L.icon({
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41]
+  selectedCourse: Object
 });
 
-function invalidateSize(){ if(map) map.invalidateSize(); }
-defineExpose({ invalidateSize });
+const mapContainer = ref(null);
+const map = ref(null);
+const currentPolyline = ref(null);
+const currentStartMarker = ref(null);
+const currentEndMarker = ref(null);
 
-function updateMap(course){
-  console.log('[BeachMap] updateMap', course?.id ?? '(none)', 'points=', course?.points?.length ?? 0);
-  if(!map){ console.warn('[BeachMap] map not initialized'); return; }
-  markerLayer.clearLayers();
-  if(!course || !Array.isArray(course.points) || course.points.length === 0){
-    console.log('[BeachMap] no points to show'); return;
+const clearMarkers = () => {
+  if (currentStartMarker.value) {
+    currentStartMarker.value.setMap(null);
+    currentStartMarker.value = null;
   }
+  if (currentEndMarker.value) {
+    currentEndMarker.value.setMap(null);
+    currentEndMarker.value = null;
+  }
+};
 
-  const latlngs = [];
-  course.points.forEach((p, i) => {
-    try {
-      const marker = L.marker([p.lat, p.lng], { icon: getIcon() }).bindPopup(p.label || `${course.title || ''} ${i+1}`);
-      markerLayer.addLayer(marker);
-      latlngs.push([p.lat, p.lng]);
-    } catch(e){
-      console.error('[BeachMap] marker error', e, p);
-    }
+const createMarker = (position, title) => {
+  return new kakao.maps.Marker({
+    position,
+    map: map.value,
+    title
   });
+};
 
-  if(latlngs.length){
-    const bounds = L.latLngBounds(latlngs);
-    if(bounds.isValid()){
-      map.fitBounds(bounds.pad(0.18));
-    } else {
-      map.setView(latlngs[0], 13);
-    }
+const drawRoute = (pathPositions, course) => {
+  if (currentPolyline.value) {
+    currentPolyline.value.setMap(null);
+    currentPolyline.value = null;
   }
-}
+  clearMarkers();
+
+  if (pathPositions.length > 0) {
+    currentPolyline.value = new kakao.maps.Polyline({
+      path: pathPositions,
+      strokeWeight: 6,
+      strokeColor: '#FF3E00',
+      strokeOpacity: 0.8
+    });
+    currentPolyline.value.setMap(map.value);
+  }
+
+  if (course?.points?.length) {
+    const startPos = new kakao.maps.LatLng(course.points[0].lat, course.points[0].lng);
+    const endPos = new kakao.maps.LatLng(
+      course.points[course.points.length - 1].lat,
+      course.points[course.points.length - 1].lng
+    );
+    currentStartMarker.value = createMarker(startPos, '출발');
+    currentEndMarker.value = createMarker(endPos, '도착');
+  }
+
+  if (pathPositions.length > 0) {
+    const bounds = new kakao.maps.LatLngBounds();
+    pathPositions.forEach(p => bounds.extend(p));
+    map.value.setBounds(bounds);
+  }
+};
+
+const initMap = () => {
+  const options = {
+    center: new kakao.maps.LatLng(35.1587, 129.1604),
+    level: 7
+  };
+  map.value = new kakao.maps.Map(mapContainer.value, options);
+};
+
+const updateRoute = async (course) => {
+  if (!map.value || !course?.points?.length) return;
+
+  try {
+    const start = course.points[0];
+    const end = course.points[course.points.length - 1];
+    const viaPoints = course.points.slice(1, -1).map((point, index) => ({
+      viaPointId: String(index + 1),
+      viaPointName: point.label || `경유${index + 1}`,
+      viaX: point.lng,
+      viaY: point.lat,
+      reqCoordType: 'WGS84GEO',
+      resCoordType: 'WGS84GEO'
+    }));
+
+    const response = await axios.post(
+      'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1',
+      {
+        startX: start.lng,
+        startY: start.lat,
+        endX: end.lng,
+        endY: end.lat,
+        startName: '출발',
+        endName: '도착',
+        reqCoordType: 'WGS84GEO',
+        resCoordType: 'WGS84GEO',
+        searchOption: '0',
+        viaPoints
+      },
+      {
+        headers: { appKey: import.meta.env.VITE_TMAP_APP_KEY }
+      }
+    );
+
+    const path = [];
+    (response.data.features || []).forEach((feature) => {
+      if (feature.geometry?.type === 'LineString') {
+        feature.geometry.coordinates.forEach((coord) => {
+          path.push(new kakao.maps.LatLng(coord[1], coord[0]));
+        });
+      }
+    });
+
+    drawRoute(path, course);
+  } catch (e) {
+    console.error('티맵 경로 탐색 실패:', e);
+    drawRoute([], course);
+  }
+};
 
 onMounted(() => {
-  // initialize map
-  map = L.map("map", { center: [35.1796, 129.0756], zoom: 12 });
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-  markerLayer.addTo(map);
-
-  nextTick(() => {
-    if(props.selectedCourse) updateMap(props.selectedCourse);
-    setTimeout(()=> invalidateSize(), 200);
+  const script = document.createElement('script');
+  script.src = `https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${import.meta.env.VITE_KAKAO_MAP_KEY}`;
+  script.onload = () => kakao.maps.load(() => {
+    initMap();
+    if (props.selectedCourse) updateRoute(props.selectedCourse);
   });
+  document.head.appendChild(script);
 });
 
-watch(() => props.selectedCourse, (c) => {
-  // slight delay to allow layout transitions
-  setTimeout(()=> updateMap(c), 60);
+watch(() => props.selectedCourse, (newVal) => {
+  if (map.value) updateRoute(newVal);
 });
-
-onUnmounted(() => { if(map) map.remove(); });
 </script>
 
-<style>
-#map { width: 100%; height: 520px; border-radius: 16px; }
-@media (max-width: 1080px) {
-  #map { height: 420px; }
+<style scoped>
+.map-container {
+  width: 100%;
+  height: 520px;
+  border-radius: 16px;
 }
 </style>
