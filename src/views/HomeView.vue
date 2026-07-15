@@ -1,67 +1,56 @@
 <template>
   <div class="app-wrap">
-    <!-- Header -->
     <header class="app-header">
-      <div class="brand" @click="scrollTo('top')" style="cursor:pointer">
+        <div class="brand" @click="scrollTo('top')" style="cursor:pointer">
         <div class="logo">🌊</div>
         <div class="brand-text">
-          <div class="brand-title">RunWave</div>
-          <div class="brand-sub">Running in Busan, Together.</div>
+        <h1>RunWave</h1>
+        <p>Running in Busan, Together.</p>
         </div>
-      </div>
+    </div>
 
-      <nav class="nav">
-        <button class="nav-btn" @click="scrollTo('top')">홈</button>
-        <button class="nav-btn" @click="scrollTo('community')">러닝 크루</button>
-        <button class="nav-btn" @click="scrollTo('courses')">코스 추천</button>
-        <button class="nav-btn" @click="scrollTo('hall')">명예의 전당</button>
-        <button class="nav-btn" @click="scrollTo('records')">내 기록</button>
-      </nav>
+    <nav class="nav">
+        <button class="nav-btn">🏠 홈</button>
+        <button class="nav-btn">👥 러닝 크루</button>
+        <button class="nav-btn">🗺️ 코스 추천</button>
+        <button class="nav-btn">🏆 명예의 전당</button>
+        <button class="nav-btn">📊 내 기록</button>
+    </nav>
     </header>
 
     <main class="app-content">
       <!-- Hero: course quick buttons + today's recommendation -->
-      <section id="top" class="hero">
-        <div class="left">
-          <h2>부산 러닝 코스 추천 한눈에 보기</h2>
-          <p>원하는 코스를 눌러 지도로 확인하세요.</p>
 
-          <div id="courses" class="course-list">
-            <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
-          </div>
-
-          <div style="margin-top:12px;">
-            <button class="btn btn-ghost" @click="toggleMapLarge">{{ mapLarge ? '지도 축소' : '지도 크게 보기' }}</button>
-          </div>
-        </div>
-
-        <div class="right hero-right">
-          <div class="popup-card">
-            <div class="hero-today">
-              <div class="thumb">이미지</div>
-              <div>
-                <div class="today-title">{{ courses[0]?.title }}</div>
-                <div class="today-sub">{{ courses[0]?.distance }}</div>
-                <div style="margin-top:8px;">
-                  <button class="btn btn-primary" @click="selectCourse(courses[0])">지도에서 보기</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- Main layout: map + sidebar -->
       <div class="content-layout">
         <section id="map-section" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
-          <div class="panel-head">
+        <div class="panel-head">
+            <div>
+            <p class="eyebrow">부산 비치런</p>
             <h2>부산 비치런 지도</h2>
-            <p>코스를 선택하면 지도에 표시됩니다.</p>
-          </div>
+            <p class="panel-copy">선택한 코스의 출발지, 중간 지점, 도착지가 지도 위에 표시됩니다.</p>
+            </div>
 
-          <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
+            <div class="panel-actions">
+            <button class="btn btn-primary" @click="toggleMapLarge">
+                {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
+            </button>
+            </div>
+        </div>
 
-          <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" />
+        <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
+
+        <div class="map-card">
+            <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" />
+        </div>
+
+          <section class="community-section">
+            <BoardWrite v-if="currentHash === '#/write'" />
+            <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
+            <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
+            <BoardList v-else />
+        </section>
         </section>
 
         <aside class="sidebar-panel">
@@ -120,37 +109,13 @@
               </div>
             </div>
           </div>
+
+          <div class="popup-card weather-card">
+            <WeatherDashBoard />
+        </div>
         </aside>
       </div>
 
-      <!-- Community area: 중앙에 BoardWrite (작성), 오른쪽은 모집글 캐러셀 -->
-      <section id="community" class="community-row">
-        <div class="popup-card community-form">
-          <div class="card-label">러닝 크루 모집 작성</div>
-          <!-- 중앙에 BoardWrite 컴포넌트 삽입 -->
-          <BoardWrite />
-        </div>
-
-        <div class="popup-card crew-list">
-          <div class="card-label">모집중인 러닝 크루</div>
-          <div class="crew-carousel">
-            <div v-for="p in posts" :key="p.id" class="crew-card">
-              <strong>{{ p.title }}</strong>
-              <div class="crew-body">{{ p.description || p.content }}</div>
-              <div class="crew-footer">
-                <small>{{ formatShortDate(p.createdAt) }}</small>
-                <button class="btn btn-ghost" @click="apply(p.id)">참여하기</button>
-              </div>
-            </div>
-            <div v-if="posts.length === 0" class="crew-empty">등록된 모집글이 없습니다.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Weather and (old) in-page community list removed (no duplicate) -->
-      <section class="weather-section">
-        <WeatherDashBoard />
-      </section>
 
       <RunChat />
     </main>
@@ -162,6 +127,7 @@
 </template>
 
 <script setup>
+import '../styles/board.css';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 
 import BoardList from '../components/BoardList.vue';
@@ -261,35 +227,118 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 </script>
 
 <style scoped>
-/* (기존 스타일 유지) - 필요 시 style.css 에 통합하세요. */
-.app-content { width:100%; max-width:1600px; margin:0 auto; padding:16px 12px; box-sizing:border-box; }
-.app-header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px; border-radius:12px; margin-bottom:12px; background:linear-gradient(90deg, rgba(30,136,255,0.04), rgba(14,165,233,0.02)); }
-.brand { display:flex; gap:10px; align-items:center; }
-.logo { width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,#1e88ff,#42a5f5); color:#fff; display:grid; place-items:center; font-weight:700; }
-.nav { display:flex; gap:8px; }
-.nav-btn { background:transparent; border:0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; color:var(--muted-2); }
-.nav-btn:hover{ background:rgba(30,136,255,0.06); color:var(--primary); }
-
-.hero { display:flex; gap:20px; align-items:flex-start; margin-bottom:18px; }
-.hero .left { flex:1; }
-.hero-right { width:420px; }
-.thumb { width:88px; height:64px; background:#eef6ff; border-radius:10px; display:flex; align-items:center; justify-content:center; }
-
-.content-layout { display:grid; grid-template-columns: minmax(0, 2.8fr) minmax(340px, 1fr); gap:28px; align-items:start; margin-bottom:20px; }
-.map-panel { background:var(--card-bg); border-radius:20px; padding:18px; box-shadow:var(--shadow-md); min-height:480px; transition:all .28s ease; }
-.map-panel--large { min-height:820px; }
-
-.community-row { display:flex; gap:18px; margin-top:18px; flex-wrap:wrap; }
-.community-form { flex:1; min-width:320px; }
-.crew-list { flex:1.2; min-width:300px; }
-.crew-carousel { display:flex; gap:12px; overflow-x:auto; padding:8px 2px; }
-.crew-card { min-width:220px; background:var(--card-bg); padding:12px; border-radius:10px; border:1px solid var(--border); box-shadow:var(--shadow-md); display:flex; flex-direction:column; gap:8px; }
-.crew-footer { display:flex; justify-content:space-between; align-items:center; }
-
-@media (max-width: 1080px) {
-  .content-layout { grid-template-columns: 1fr; }
-  .hero { flex-direction:column; }
-  .hero-right { width:100%; }
-  .sidebar-panel { position:static; }
+.app-header {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  padding:20px 22px;
+  border-radius:24px;
+  background: linear-gradient(90deg, rgba(30,136,255,0.11), rgba(255,255,255,0.95));
+  border: 1px solid rgba(30,136,255,0.16);
+  box-shadow: 0 20px 54px rgba(16,40,90,0.08);
+  margin-bottom: 28px;
 }
+
+.brand-text h1 {
+  margin:0;
+  font-size:1.75rem;
+  font-weight:800;
+  color: var(--text);
+}
+
+.brand-text p {
+  margin:6px 0 0;
+  color: var(--muted-2);
+  font-size:0.95rem;
+}
+
+.nav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.nav-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 16px;
+  border-radius:16px;
+  border:1px solid transparent;
+  background: rgba(255,255,255,0.92);
+  color: var(--text);
+  font-weight:700;
+  transition: all .18s ease;
+}
+
+.nav-btn:hover {
+  border-color: rgba(30,136,255,0.18);
+  background: rgba(30,136,255,0.08);
+}
+
+.content-layout {
+  display:grid;
+  grid-template-columns: minmax(0, 2.8fr) minmax(340px, 1fr);
+  gap:32px;
+  align-items:start;
+  margin-bottom:36px;
+}
+
+.map-panel {
+  background: linear-gradient(180deg, rgba(240,248,255,0.95), #ffffff);
+  border: 1px solid rgba(30,136,255,0.14);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 64px rgba(16, 40, 100, 0.08);
+}
+
+.map-card {
+  margin-top: 18px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(30,136,255,0.12);
+  background: #fff;
+}
+
+.sidebar-panel {
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  position:sticky;
+  top:28px;
+  max-width:460px;
+  width:100%;
+}
+
+.sidebar-panel .popup-card {
+  background: linear-gradient(180deg, #ffffff, #f5f8ff);
+  border: 1px solid rgba(30,136,255,0.14);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 22px 56px rgba(16,40,90,0.06);
+}
+
+.map-panel .community-section {
+  margin-top: 28px;
+}
+
+.map-panel .community-panel {
+  width: 100%;
+  background: linear-gradient(180deg, #ffffff, #f7f9ff);
+  border: 1px solid rgba(30,136,255,0.14);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 48px rgba(16,40,90,0.06);
+}
+
+.weather-card {
+  background: linear-gradient(180deg, #ffffff, #f7f9ff);
+  border: 1px solid rgba(30,136,255,0.14);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 20px 48px rgba(16,40,90,0.06);
+}
+
 </style>
