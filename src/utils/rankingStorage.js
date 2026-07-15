@@ -1,16 +1,24 @@
 // src/utils/rankingStorage.js
 
-// 1. 로그를 가져오는 함수
 export const getLogs = () => {
   const data = localStorage.getItem('my_running_logs');
   return data ? JSON.parse(data) : [];
 };
 
-// 2. 통계를 계산하는 함수 (반드시 export 키워드 확인!)
-export const getStats = (period = 'day') => {
-  const logs = getLogs();
+export const saveLogs = (logs) => {
+  localStorage.setItem('my_running_logs', JSON.stringify(logs));
+};
+
+export const appendLog = (log) => {
+  const nextLogs = [...getLogs(), { id: Date.now(), ...log }];
+  saveLogs(nextLogs);
+  return nextLogs;
+};
+
+export const getStats = (period = 'day', sourceLogs = null) => {
+  const logs = Array.isArray(sourceLogs) ? sourceLogs : getLogs();
   const now = new Date();
-  
+
   const filtered = logs.filter(log => {
     const logDate = new Date(log.date);
     if (period === 'day') return logDate.toDateString() === now.toDateString();
@@ -20,7 +28,7 @@ export const getStats = (period = 'day') => {
   });
 
   return filtered.reduce((acc, cur) => ({
-    totalDistance: acc.totalDistance + cur.distance,
-    totalTime: acc.totalTime + cur.time
+    totalDistance: acc.totalDistance + Number(cur.distance || 0),
+    totalTime: acc.totalTime + Number(cur.time || 0)
   }), { totalDistance: 0, totalTime: 0 });
 };

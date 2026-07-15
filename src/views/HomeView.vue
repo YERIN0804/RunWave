@@ -20,128 +20,180 @@
     </nav>
     </header>
 
-    <main class="app-content">
-      <!-- Hero: course quick buttons + today's recommendation -->
+<main class="app-content">
+  <!-- Hero: course quick buttons + today's recommendation -->
 
-
-      <!-- Main layout: map + sidebar -->
-      <div class="content-layout">
-        <section id="courses" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
-        <div class="panel-top">
+  <!-- Main layout: map + sidebar -->
+  <div class="content-layout">
+    <!-- 왼쪽 메인 영역 -->
+    <section id="courses" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
+      <div class="panel-top">
         <div>
-            <h2>부산 비치런 지도</h2>
-            <p class="panel-copy">선택한 코스의 출발지, 중간 지점, 도착지가 지도 위에 표시됩니다.</p>
+          <h2>부산 비치런 지도</h2>
+          <p class="panel-copy">선택한 코스의 출발지, 중간 지점, 도착지가 지도 위에 표시됩니다.</p>
         </div>
         <button class="btn btn-primary" @click="toggleMapLarge">
-            {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
+          {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
         </button>
-  
-        </div>
-
-        <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
-        <div class="course-summary">
-            <div class="course-meta">
-                <strong>{{ selectedCourse.distance }}</strong>
-                <span>{{ selectedCourse.title.replace('🏃 ', '') }}</span>
-            </div>
-            <p class="course-description">{{ selectedCourse.description }}</p>
-        </div>
-
-        <div class="map-card">
-            <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" :large="mapLarge" />
-        </div>
-
-          <section id="community" class="community-section">
-            <BoardWrite v-if="currentHash === '#/write'" />
-            <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
-            <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
-            <BoardList v-else />
-        </section>
-        </section>
-
-        <aside class="sidebar-panel">
-
-            <div class="popup-card weather-card">
-            <WeatherDashBoard />
-            </div>
-          <div id="hall" class="popup-card ranking-card">
-            <p class="card-label">🏆 부산 명예의 전당</p>
-            <h3>TOP 3 러너</h3>
-            <ul>
-              <li v-for="(item, idx) in top3" :key="item.id">
-                <div class="rank-left">
-                  <span class="rank">#{{ idx + 1 }}</span>
-                  <strong class="rname">{{ item.name }}</strong>
-                </div>
-                <span class="rvalue">{{ item.distance.toFixed(1) }} km</span>
-              </li>
-            </ul>
-          </div>
-
-          <div class="popup-card stats-card" id="records">
-            <p class="card-label">📊 내 기록</p>
-            <h3>요약</h3>
-
-            <div class="dashboard-tiles">
-              <div class="tile">
-                <div class="tile-label">이번 달 거리</div>
-                <div class="tile-value">{{ statsMonth.totalDistance.toFixed(1) }} km</div>
-              </div>
-
-              <div class="tile">
-                <div class="tile-label">이번 달 시간</div>
-                <div class="tile-value">{{ statsMonth.totalTime }} 분</div>
-              </div>
-
-              <div class="tile">
-                <div class="tile-label">평균 페이스</div>
-                <div class="tile-value">{{ avgPace }}</div>
-              </div>
-
-              <div class="tile">
-                <div class="tile-label">런 횟수</div>
-                <div class="tile-value">{{ runCount }}</div>
-              </div>
-
-              <div class="record-entry">
-                <input v-model="newLogDate" type="date" />
-                <input v-model="newLogDistance" type="number" placeholder="거리 km" />
-                <input v-model="newLogTime" type="number" placeholder="시간 분" />
-                <button class="btn btn-primary" @click="addRunLog">기록 추가</button>
-                </div>
-            </div>
-
-            <div class="sparkline-wrap">
-              <div class="sparkline-label">최근 7일 거리 (km)</div>
-              <div class="sparkline">
-                <div
-                  v-for="(v, i) in last7"
-                  :key="i"
-                  class="bar"
-                  :style="{ height: (v / maxLast7 * 100) + '%' }"
-                  :title="v.toFixed(1) + ' km'"
-                >
-                  <span class="bar-day">{{ i === 6 ? '오늘' : '' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
+      <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
+      
+      <div v-if="selectedCourse" class="course-summary">
+        <div class="course-meta">
+          <strong>{{ selectedCourse.distance }}</strong>
+          <span>{{ selectedCourse.title ? selectedCourse.title.replace('🏃 ', '') : '' }}</span>
+        </div>
+        <p class="course-description">{{ selectedCourse.description }}</p>
+      </div>
 
-      <RunChat />
-    </main>
+      <div class="map-card">
+        <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" :large="mapLarge" />
+      </div>
 
-    <footer class="app-footer">
-      <p>© 2026 RunWave. All rights reserved.</p>
-    </footer>
+      <section id="community" class="community-section">
+        <BoardWrite v-if="currentHash === '#/write'" />
+        <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
+        <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
+        <BoardList v-else />
+      </section>
+    </section>
+
+    <!-- 오른쪽 사이드바 영역 -->
+    <aside class="sidebar-panel">
+      <!-- 날씨 카드 -->
+      <div class="popup-card weather-card">
+        <WeatherDashBoard />
+      </div>
+
+      <!-- 명예의 전당 카드 -->
+      <div id="hall" class="popup-card ranking-card">
+        <p class="card-label">🏆 부산 명예의 전당</p>
+        <h3>TOP 3 러너</h3>
+        <ul>
+          <li v-for="(item, idx) in top3" :key="item.id">
+            <div class="rank-left">
+              <span class="rank">#{{ idx + 1 }}</span>
+              <strong class="rname">{{ item.name }}</strong>
+            </div>
+            <span class="rvalue">{{ item.distance.toFixed(1) }} km</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 내 기록 요약 카드 -->
+      <div class="popup-card stats-card" id="records">
+        <p class="card-label">📊 내 기록</p>
+        <h3>요약</h3>
+
+        <!-- 타일 영역 -->
+        <div class="dashboard-tiles">
+          <div class="tile tile-highlight">
+            <div class="tile-label">이번 달 거리</div>
+            <div class="tile-value">{{ statsMonth.totalDistance.toFixed(1) }} km</div>
+          </div>
+
+          <div class="tile">
+            <div class="tile-label">이번 달 시간</div>
+            <div class="tile-value">{{ statsMonth.totalTime }} 분</div>
+          </div>
+
+          <div class="tile">
+            <div class="tile-label">평균 페이스</div>
+            <div class="tile-value">{{ avgPace }}</div>
+          </div>
+
+          <div class="tile">
+            <div class="tile-label">런 횟수</div>
+            <div class="tile-value">{{ runCount }}회</div>
+          </div>
+        </div> <!-- dashboard-tiles 닫힘 -->
+
+        <!-- 기록 입력 폼 -->
+        <div class="record-form">
+          <div class="record-form-grid">
+            <label class="record-field">
+              <span>날짜</span>
+              <input v-model="newLogDate" type="date" @keydown.enter.prevent="addRunLog" />
+            </label>
+
+            <label class="record-field">
+              <span>거리(km)</span>
+              <input
+                v-model="newLogDistance"
+                type="number"
+                min="0.1"
+                step="0.1"
+                placeholder="예: 5.2"
+                @keydown.enter.prevent="addRunLog"
+              />
+            </label>
+
+            <label class="record-field">
+              <span>시간(분)</span>
+              <input
+                v-model="newLogTime"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="예: 32"
+                @keydown.enter.prevent="addRunLog"
+              />
+            </label>
+          </div>
+
+          <div class="record-form-actions">
+            <p v-if="recordMessage" class="record-message" :class="recordMessageType">
+              {{ recordMessage }}
+            </p>
+            <button class="btn btn-primary" @click="addRunLog">기록 저장</button>
+          </div>
+        </div> <!-- record-form 닫힘 -->
+
+        <!-- 최근 7일 스파크라인 차트 영역 -->
+        <div class="history-card">
+          <div class="history-header">
+            <div>
+              <p class="history-label">최근 7일 거리</p>
+              <p class="history-subtitle">매일 기록한 러닝 거리 흐름</p>
+            </div>
+            <div class="history-badge">
+              {{ weekBars ? weekBars.reduce((s, v) => s + v, 0).toFixed(1) : '0.0' }} km
+            </div>
+          </div>
+
+          <!-- 모든 요일이 텍스트로만 표시되는 스파크라인 -->
+          <div class="sparkline"> 
+            <div v-for="(v, i) in weekBars" :key="i" class="bar"> 
+              <div class="bar-track"> 
+                <div class="bar-fill" :style="{ height: Math.max((v / maxWeekBar) * 100, 6) + '%' }"></div>
+              </div> 
+              <!-- i === todayIndex 조건과 관계없이 언제나 weekdayNames[i]를 렌더링합니다 -->
+              <span class="bar-day" :class="{ today: i === todayIndex }">
+                {{ weekdayNames[i] }}
+              </span> 
+              <span class="bar-value">{{ v.toFixed(1) }}</span> 
+            </div> 
+          </div> 
+        </div>
+
+      </div> <!-- stats-card 닫힘 -->
+    </aside>
+  </div> <!-- content-layout 닫힘 -->
+
+  <RunChat />
+</main>
+
+<footer class="app-footer">
+  <p>© 2026 RunWave. All rights reserved.</p>
+</footer>
   </div>
 </template>
 
 <script setup>
 import '../styles/board.css';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+
 
 import BoardList from '../components/BoardList.vue';
 import BoardWrite from '../components/BoardWrite.vue';
@@ -152,12 +204,18 @@ import CourseList from '../components/CourseList.vue';
 import RunChat from '../components/RunChat.vue';
 import WeatherDashBoard from '../components/WeatherDashBoard.vue';
 
-import { getStats, getLogs } from '../utils/rankingStorage';
+import { getStats, getLogs, appendLog } from '../utils/rankingStorage';
 import { initialRankings } from '../data/rankingDummy';
 import { courses } from '../data/runningCourses';
 
 // 게시글 서비스 (로컬스토리지)
 import { getPosts } from '../services/postService.js';
+
+const newLogDate = ref(formatShortDate(new Date().toISOString()));
+const newLogDistance = ref('');
+const newLogTime = ref('');
+const recordMessage = ref('');
+const recordMessageType = ref('success');
 
 // refs / state
 const beachMapRef = ref(null);
@@ -206,11 +264,12 @@ const top3 = computed(() =>
   [...initialRankings].sort((a, b) => b.distance - a.distance).slice(0, 3)
 );
 
-const statsDay = computed(() => getStats('day'));
-const statsWeek = computed(() => getStats('week'));
-const statsMonth = computed(() => getStats('month'));
 
-const logs = computed(() => getLogs());
+// 통계, 로그 상태 수정
+const logs = ref(getLogs());
+const statsDay = computed(() => getStats('day', logs.value));
+const statsWeek = computed(() => getStats('week', logs.value));
+const statsMonth = computed(() => getStats('month', logs.value));
 const runCount = computed(() => logs.value.length);
 
 const avgPace = computed(() => {
@@ -222,6 +281,73 @@ const avgPace = computed(() => {
   const ss = Math.round((minutesPerKm - mm) * 60);
   return `${mm}:${String(ss).padStart(2, '0')}/km`;
 });
+
+const weekLabels = computed(() => {
+  const now = new Date();
+  return Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(now);
+    d.setDate(now.getDate() - (6 - i));
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    return i === 6 ? '오늘' : dayNames[d.getDay()];
+  });
+});
+
+const weekdayNames = ['월', '화', '수', '목', '금', '토', '일'];
+
+const weekBars = computed(() => {
+const now = new Date();
+const arr = Array(7).fill(0);
+for (let i = 0; i < 7; i++) {
+const d = new Date(now);
+d.setDate(now.getDate() - (6 - i));
+const key = d.toISOString().slice(0, 10);
+const weekdayIndex = (d.getDay() + 6) % 7; // Mon=0 ... Sun=6
+arr[weekdayIndex] = logs.value
+.filter(l => l.date === key)
+.reduce((s, it) => s + Number(it.distance || 0), 0);
+}
+return arr;
+});
+
+const todayIndex = computed(() => {
+return (new Date().getDay() + 6) % 7;
+});
+
+const maxWeekBar = computed(() => Math.max(...weekBars.value, 1));
+
+function setRecordMessage(message, type = 'success') {
+  recordMessage.value = message;
+  recordMessageType.value = type;
+}
+
+function addRunLog() {
+  const date = newLogDate.value;
+  const distance = Number(newLogDistance.value);
+  const time = Number(newLogTime.value);
+
+  if (!date) {
+    setRecordMessage('날짜를 선택해 주세요.', 'error');
+    return;
+  }
+
+  if (!Number.isFinite(distance) || distance <= 0) {
+    setRecordMessage('거리는 0보다 큰 숫자로 입력해 주세요.', 'error');
+    return;
+  }
+
+  if (!Number.isFinite(time) || time <= 0) {
+    setRecordMessage('시간은 0보다 큰 숫자로 입력해 주세요.', 'error');
+    return;
+  }
+
+  const updatedLogs = appendLog({ date, distance, time });
+  logs.value = updatedLogs;
+
+  newLogDistance.value = '';
+  newLogTime.value = '';
+  newLogDate.value = formatShortDate(new Date().toISOString());
+  setRecordMessage(`${distance.toFixed(1)}km / ${time}분 기록이 저장됐어요.`, 'success');
+}
 
 // last7
 const last7 = computed(() => {
@@ -243,17 +369,23 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 
 <style scoped>
 .app-header {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
   display:flex;
   flex-wrap:wrap;
   justify-content:space-between;
   align-items:center;
   gap:18px;
-  padding:20px 22px;
-  border-radius:24px;
-  background: linear-gradient(90deg, rgba(30,136,255,0.11), rgba(255,255,255,0.95));
-  border: 1px solid rgba(30,136,255,0.16);
-  box-shadow: 0 20px 54px rgba(16,40,90,0.08);
-  margin-bottom: 28px;
+  padding:18px 28px;
+  border-radius:0;
+  background: linear-gradient(90deg, rgba(30,136,255,0.08), rgba(255,255,255,0.98));
+  border-bottom: 1px solid rgba(30,136,255,0.12);
+  box-shadow: 0 6px 18px rgba(16,40,90,0.06);
+  margin-bottom: 22px;
 }
 
 .brand-text h1 {
@@ -405,5 +537,210 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
   margin: 0;
   color: #56627e;
   line-height: 1.6;
+}
+
+.record-form {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(30,136,255,0.08), rgba(255,255,255,0.95));
+  border: 1px solid rgba(30,136,255,0.12);
+}
+
+.record-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.record-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--muted-2);
+}
+
+.record-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(30,136,255,0.16);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+}
+
+.record-field input:focus {
+  outline: none;
+  border-color: rgba(30,136,255,0.38);
+  box-shadow: 0 0 0 3px rgba(30,136,255,0.12);
+}
+
+.record-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.record-form-actions .btn {
+  margin-left: auto;
+}
+
+
+
+.record-message {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.record-message.success {
+  color: #0b7a3f;
+}
+
+.record-message.error {
+  color: #d9480f;
+}
+
+@media (max-width: 900px) {
+  .record-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.tile {
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(241,247,255,0.95));
+  border: 1px solid rgba(30,136,255,0.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.tile-highlight {
+  background: linear-gradient(135deg, rgba(30,136,255,0.12), rgba(255,255,255,0.98));
+}
+
+.tile-label {
+  font-size: 0.8rem;
+  color: var(--muted-2);
+  margin-bottom: 6px;
+}
+
+.tile-value {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.record-form {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+
+.history-card {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(241,247,255,0.95));
+  border: 1px solid rgba(30,136,255,0.12);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.history-label {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.history-subtitle {
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 0.85rem;
+}
+
+.history-badge {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(30,136,255,0.12);
+  color: #1565c0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 148px;
+}
+
+.bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.bar-track {
+  width: 100%;
+  max-width: 28px;
+  height: 92px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(30,136,255,0.08);
+}
+
+.bar-fill {
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #67b7ff 0%, #1e88ff 100%);
+  min-height: 6px;
+}
+
+.bar-day {
+  font-size: 0.72rem;
+  color: var(--muted-2);
+  font-weight: 700;
+}
+
+.bar-value {
+  font-size: 0.74rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .dashboard-tiles {
+    grid-template-columns: 1fr;
+  }
+  .record-form {
+    grid-column: 1;
+  }
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 </style>
