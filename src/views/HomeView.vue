@@ -25,18 +25,16 @@
       <!-- Main layout: map + sidebar -->
       <div class="content-layout">
         <section id="map-section" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
-        <div class="panel-head">
-            <div>
+        <div class="panel-top">
+        <div>
             <p class="eyebrow">부산 비치런</p>
             <h2>부산 비치런 지도</h2>
             <p class="panel-copy">선택한 코스의 출발지, 중간 지점, 도착지가 지도 위에 표시됩니다.</p>
-            </div>
-
-            <div class="panel-actions">
-            <button class="btn btn-primary" @click="toggleMapLarge">
-                {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
-            </button>
-            </div>
+        </div>
+        <button class="btn btn-primary" @click="toggleMapLarge">
+            {{ mapLarge ? '작게 보기' : '지도 크게 보기' }}
+        </button>
+  
         </div>
 
         <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
@@ -54,6 +52,10 @@
         </section>
 
         <aside class="sidebar-panel">
+
+            <section class="weather-section">
+                <WeatherDashBoard />
+            </section>
           <div id="hall" class="popup-card ranking-card">
             <p class="card-label">🏆 부산 명예의 전당</p>
             <h3>TOP 3 러너</h3>
@@ -109,10 +111,6 @@
               </div>
             </div>
           </div>
-
-          <div class="popup-card weather-card">
-            <WeatherDashBoard />
-        </div>
         </aside>
       </div>
 
@@ -340,5 +338,27 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
   padding: 20px;
   box-shadow: 0 20px 48px rgba(16,40,90,0.06);
 }
+.map-panel {
+  transition: all .3s ease;
+}
 
+.map-panel--large {
+  min-height: 740px;
+}
+
+.map-panel .map-card {
+  min-height: 520px;
+  transition: min-height .3s ease;
+}
+
+.map-panel--large .map-card {
+  min-height: 760px;
+}
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
 </style>
