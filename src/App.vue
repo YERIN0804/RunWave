@@ -1,4 +1,11 @@
+<script setup>
+import HomeView from './views/HomeView.vue'
+</script>
+
 <template>
+<<<<<<< HEAD
+  <HomeView />
+=======
   <router-view />
   <!-- <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue'
@@ -29,4 +36,5 @@
       <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
       <BoardList v-else />
     </main> -->
+>>>>>>> 910b5e4708166eeeaf7dd93faa8e36e2cf39662d
 </template>
