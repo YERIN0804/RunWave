@@ -24,7 +24,7 @@
   <!-- Main layout: map + sidebar -->
   <div class="content-layout">
     <!-- 왼쪽 메인 영역 -->
-    <section id="courses" class="map-panel" :class="{ 'map-panel--large': mapLarge }">
+    <section id="courses" class="map-panel fade-in-up" :class="{ 'map-panel--large': mapLarge }">
       <div class="panel-top">
         <div class="panel-header">
           <div class="badge-running">🔥 부산 러닝 라이프</div>
@@ -876,5 +876,16 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
     align-items: flex-start;
     gap: 8px;
   }
+
+  /* 떠오르는 애니메이션 정의 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
 }
 </style>
