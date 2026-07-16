@@ -40,7 +40,7 @@
       <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
       
       <MarathonDday />
-
+      <MarathonCalendar />
 <div v-if="selectedCourse" class="course-summary">
     <div class="course-info">
       <div class="course-meta">
@@ -246,6 +246,8 @@ import { getStats, getLogs, appendLog } from '../utils/rankingStorage';
 import { initialRankings } from '../data/rankingDummy';
 import { loadRunningCourses } from '../utils/courseBuilder'; // 추가
 import MarathonDday from "../components/MarathonDday.vue";
+import MarathonCalendar from "../components/MarathonCalendar.vue";
+
 // 게시글 서비스 (로컬스토리지)
 import { getPosts } from '../services/postService.js';
 
