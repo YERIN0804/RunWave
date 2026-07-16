@@ -1,20 +1,44 @@
 <template>
-  <div ref="mapContainer" class="map-container"></div>
+  <div ref="mapContainer" class="map-container" :style="{ height: mapHeight }"></div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, watch, defineExpose, onMounted } from 'vue';
 import axios from 'axios';
 
-const props = defineProps({
-  selectedCourse: Object
+const props = defineProps({ 
+  selectedCourse: Object,
+  large: Boolean // 부모로부터 크게 보기 상태를 받음
 });
+
+// 1. 상태에 따른 높이 계산
+const mapHeight = computed(() => (props.large ? '760px' : '520px'));
 
 const mapContainer = ref(null);
 const map = ref(null);
 const currentPolyline = ref(null);
 const currentStartMarker = ref(null);
 const currentEndMarker = ref(null);
+
+// 2. 카카오맵 레이아웃 재계산 함수
+const relayout = () => {
+  if (map.value) {
+    map.value.relayout();
+    // 필요 시 중심 좌표 재설정 로직 추가 가능
+  }
+};
+
+// 3. large 상태 변경 감지
+watch(() => props.large, () => {
+  // CSS transition(0.3s)이 끝날 시간을 고려하여 relayout 실행
+  setTimeout(relayout, 350); 
+});
+
+// 4. 노출할 함수들을 하나로 합쳐서 한 번만 호출
+defineExpose({ 
+  relayout,
+  // 기존 invalidateSize가 필요하다면 여기서 함께 노출
+});
 
 const clearMarkers = () => {
   if (currentStartMarker.value) {
@@ -145,7 +169,8 @@ watch(() => props.selectedCourse, (newVal) => {
 <style scoped>
 .map-container {
   width: 100%;
-  height: 520px;
+  transition: height 0.3s ease; /* 부드러운 높이 변화 */
   border-radius: 16px;
+  overflow: hidden; /* 지도 렌더링 시 여백 방지 */
 }
 </style>

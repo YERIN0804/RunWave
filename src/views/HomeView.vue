@@ -1,23 +1,21 @@
 <template>
-  <div class="app-wrap">
     <header class="app-header">
-        <div class="brand" @click="scrollTo('top')" style="cursor:pointer">
-        <div class="logo">🌊</div>
-        <div class="brand-text">
-        <h1>RunWave</h1>
-        <p>Running in Busan, Together.</p>
+      <div class="header-inner">
+        <div class="brand" @click="scrollTo('top')">
+          <span class="logo-emoji">🌊</span>
+          <div class="brand-text">
+            <h1>RunWave</h1>
+          </div>
         </div>
-    </div>
 
-    <nav class="nav">
-<nav class="nav">
-  <button class="nav-btn" @click="scrollTo('top')">🏠 홈</button>
-    <button class="nav-btn" @click="scrollTo('courses')">🗺️ 코스 추천</button>
-  <button class="nav-btn" @click="scrollTo('community')">👥 러닝 크루</button>
-  <button class="nav-btn" @click="scrollTo('hall')">🏆 명예의 전당</button>
-  <button class="nav-btn" @click="scrollTo('records')">📊 내 기록</button>
-</nav>
-    </nav>
+        <nav class="nav">
+          <button class="nav-link" @click="scrollTo('top')">🏠 홈</button>
+          <button class="nav-link" @click="scrollTo('courses')">🗺️ 코스 추천</button>
+          <button class="nav-link" @click="scrollTo('community')">👥 러닝 크루</button>
+          <button class="nav-link" @click="scrollTo('hall')">🏆 명예의 전당</button>
+          <button class="nav-link" @click="scrollTo('records')">📊 내 기록</button>
+        </nav>
+      </div>
     </header>
 
 <main class="app-content">
@@ -36,21 +34,24 @@
             <strong>지금 당신의 러닝 메이트와 함께 달릴 최고의 코스를 확인하세요.</strong>
           </p>
         </div>
-    
-    <button class="btn btn-primary toggle-btn" @click="toggleMapLarge">
-      {{ mapLarge ? '📍 지도 축소하기' : '🗺️ 크게 보기' }}
-    </button>
+  
   </div>
 
       <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
       
-      <div v-if="selectedCourse" class="course-summary">
-        <div class="course-meta">
-          <strong>{{ selectedCourse.distance }}</strong>
-          <span>{{ selectedCourse.title ? selectedCourse.title.replace('🏃 ', '') : '' }}</span>
-        </div>
-        <p class="course-description">{{ selectedCourse.description }}</p>
+<div v-if="selectedCourse" class="course-summary">
+    <div class="course-info">
+      <div class="course-meta">
+        <strong>{{ selectedCourse.distance }}</strong>
+        <span>{{ selectedCourse.title ? selectedCourse.title.replace('🏃 ', '') : '' }}</span>
       </div>
+      <p class="course-description">{{ selectedCourse.description }}</p>
+    </div>
+    
+    <button class="btn btn-primary toggle-btn" @click="toggleMapLarge">
+      {{ mapLarge ? '📍 지도 축소' : '🗺️ 크게 보기' }}
+    </button>
+  </div>
 
       <div class="map-card">
         <BeachMap ref="beachMapRef" :selectedCourse="selectedCourse" :large="mapLarge" />
@@ -192,7 +193,7 @@
 <footer class="app-footer">
   <p>© 2026 RunWave. All rights reserved.</p>
 </footer>
-  </div>
+
 </template>
 
 <script setup>
@@ -256,9 +257,16 @@ function selectCourse(course){
 // HomeView.vue
 setTimeout(() => beachMapRef.value?.relayout?.(), 240);
 }
-function toggleMapLarge(){
+// HomeView.vue 내의 함수 수정
+function toggleMapLarge() {
   mapLarge.value = !mapLarge.value;
-  setTimeout(()=> beachMapRef.value?.invalidateSize?.(), 240);
+  
+  // DOM 업데이트가 완료된 후 실행되도록 $nextTick 사용 권장
+  nextTick(() => {
+    if (beachMapRef.value && typeof beachMapRef.value.invalidateSize === 'function') {
+      beachMapRef.value.invalidateSize();
+    }
+  });
 }
 function scrollTo(id){
   const el = document.getElementById(id);
@@ -374,25 +382,72 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 </script>
 
 <style scoped>
-
-
-.brand-text h1 {
-  margin:0;
-  font-size:1.75rem;
-  font-weight:800;
-  color: var(--text);
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 0; /* 상하 패딩을 살짝 줄임 */
 }
 
-.brand-text p {
-  margin:6px 0 0;
-  color: var(--muted-2);
-  font-size:0.95rem;
+.header-inner {
+  max-width: 1200px; /* 너비를 늘려 브랜드가 왼쪽으로 더 이동하게 함 */
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between; /* 좌우 양 끝 배치 핵심 */
+  align-items: center;
+  padding: 0 40px; /* 좌우 패딩을 늘려 콘텐츠가 양 끝으로 붙게 함 */
+  width: 100%; /* 전체 너비 활용 */
+  box-sizing: border-box;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex-shrink: 0; /* 브랜드 영역이 찌그러지지 않게 방지 */
+}
+
+.logo-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.brand-text h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.5px;
 }
 
 .nav {
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+  display: flex;
+  gap: 16px; /* 메뉴 사이 간격 */
+  align-items: center;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link:hover {
+  color: #1e88ff;
+  background: rgba(30, 136, 255, 0.08); /* 호버 시 연한 파란색 배경 */
 }
 
 .nav-btn {
@@ -491,7 +546,7 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 }
 
 .map-panel--large .map-card {
-  min-height: 760px;
+  height: 700px; /* 크게 보기 모드 시 높이 */
 }
 
 .panel-top {
@@ -587,10 +642,16 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 
 .course-summary {
   margin: 18px 0 12px;
-  padding: 16px 18px;
+  padding: 16px 20px;
   background: rgba(30,136,255,0.06);
   border-radius: 18px;
   border: 1px solid rgba(30,136,255,0.12);
+  
+  /* Flex 설정 */
+  display: flex;
+  justify-content: space-between; /* 양 끝으로 배치 */
+  align-items: center;            /* 수직 중앙 정렬 */
+  gap: 20px;
 }
 
 .course-meta {
