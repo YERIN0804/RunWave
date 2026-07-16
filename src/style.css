@@ -1,0 +1,304 @@
+/* src/style.css
+   전체 UI 스타일 (RunWave 스타일 기반)
+   - Google Noto Sans KR 사용
+*/
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+:root{
+  --bg: #f6f8fb;
+  --card-bg: #ffffff;
+  --muted: #6b6375;
+  --muted-2: #7f8799;
+  --text: #0f1724;
+  --primary: #1e88ff;
+  --accent: #ff7a18;
+  --success: #06b6a4;
+  --border: rgba(20,24,54,0.06);
+  --glass: rgba(255,255,255,0.7);
+  --shadow-lg: 0 22px 48px rgba(20,24,54,0.12);
+  --shadow-md: 0 12px 30px rgba(20,24,54,0.08);
+  --radius-lg: 20px;
+  --radius-md: 12px;
+
+  --sans: "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --heading: "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  font-family: var(--sans);
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reset + layout */
+* { box-sizing: border-box; }
+html,body,#app { height: 100%; margin: 0; padding: 0; background: var(--bg); }
+img { max-width: 100%; display:block; }
+
+/* App container */
+#app {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header / Nav similar to screenshot */
+.app-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 20px;
+  padding: 18px 10px;
+  background: linear-gradient(90deg, rgba(30,136,255,0.06), rgba(14,165,233,0.03));
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-md);
+}
+.app-header .brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.app-header .brand .logo {
+  width:44px;
+  height:44px;
+  background: var(--primary);
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-weight:800;
+}
+.app-header h1 {
+  font-family: var(--heading);
+  margin:0;
+  font-size:20px;
+  color:var(--text);
+}
+.app-header p { margin:0; color:var(--muted-2); font-size:13px; }
+
+/* hero / banner (optional usage) */
+.hero {
+  background: linear-gradient(180deg, rgba(30,136,255,0.06), rgba(255,255,255,0.0));
+  border-radius: 18px;
+  padding: 28px;
+  display:flex;
+  gap:24px;
+  align-items:center;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-lg);
+}
+.hero .left {
+  flex:1;
+}
+.hero h2 {
+  margin:0 0 8px;
+  font-size:28px;
+  color: #0b254b;
+}
+.hero p { margin:0 0 16px; color:var(--muted-2); }
+
+/* Search pill */
+.search-pill {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background: var(--card-bg);
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  max-width:720px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.04);
+}
+.search-pill input {
+  border:0;
+  outline:none;
+  font-size:14px;
+  flex:1;
+}
+
+/* Content layout: left main + right sidebar */
+.app-content { padding: 8px 0; }
+.content-layout {
+  display:grid;
+  grid-template-columns: minmax(0, 2.8fr) minmax(320px, 1fr);
+  gap: 28px;
+  align-items:start;
+  margin-bottom: 28px;
+}
+
+/* Map / main panel */
+.map-panel {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-md);
+  min-height: 540px;
+}
+
+/* Course list (cards or pills) */
+.course-list {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.course-card {
+  background: linear-gradient(180deg,#fff,#fbfcff);
+  border-radius: 12px;
+  padding:10px 14px;
+  box-shadow: 0 8px 20px rgba(16,24,40,0.03);
+  border:1px solid var(--border);
+  min-width:160px;
+  cursor:pointer;
+}
+.course-card h4 { margin:0; font-size:14px; color:var(--text); }
+.course-card p { margin:6px 0 0; font-size:12px; color:var(--muted-2); }
+
+/* Buttons */
+.btn,
+button,
+.primary-btn,
+.secondary-btn,
+.action-btn,
+.like-btn,
+.nav-btn,
+.primary,
+.secondary,
+.danger-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:8px 14px;
+  border-radius: 999px;
+  border: none;
+  cursor:pointer;
+  font-weight:600;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.btn:hover,
+button:hover,
+.primary-btn:hover,
+.secondary-btn:hover,
+.action-btn:hover,
+.like-btn:hover,
+.nav-btn:hover,
+.primary:hover,
+.secondary:hover,
+.danger-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 26px rgba(30,136,255,0.16);
+}
+
+.btn:active,
+button:active,
+.primary-btn:active,
+.secondary-btn:active,
+.action-btn:active,
+.like-btn:active,
+.nav-btn:active,
+.primary:active,
+.secondary:active,
+.danger-btn:active {
+  transform: scale(0.98);
+}
+.btn-primary {
+  background: linear-gradient(90deg,var(--primary), #42a5f5);
+  color:#fff;
+  box-shadow: 0 12px 28px rgba(30,136,255,0.14);
+}
+.btn-ghost {
+  background: transparent;
+  color:var(--primary);
+  border:1px solid rgba(30,136,255,0.12);
+}
+
+/* Sidebar popup cards */
+.sidebar-panel {
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  position: sticky;
+  top:28px;
+}
+.popup-card,
+.course-card {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow-md);
+  border:1px solid var(--border);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.popup-card:hover,
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 34px rgba(20,24,54,0.12);
+}
+.card-label { display:inline-block; font-weight:700; color:var(--primary); margin-bottom:8px; }
+
+/* Ranking card */
+.ranking-card ul { list-style:none; margin:0; padding:0; }
+.ranking-card li {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px dashed rgba(10,30,80,0.04);
+}
+.rank { font-weight:800; color:var(--accent); margin-right:8px; }
+.rvalue { color:var(--muted); font-weight:700; }
+
+/* Stats tiles */
+.dashboard-tiles { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:12px; }
+.tile {
+  background: linear-gradient(180deg,#fff,#fbfbff);
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+  border:1px solid rgba(10,20,60,0.03);
+}
+.tile-label { color:var(--muted-2); font-size:12px; }
+.tile-value { font-weight:700; font-size:16px; color:var(--text); }
+
+/* Sparkline bars */
+.sparkline { display:flex; gap:8px; align-items:end; height:64px; padding:6px 4px; }
+.sparkline .bar { flex:1; border-radius:8px 8px 4px 4px; background: linear-gradient(180deg,#ffcf9b,var(--accent)); position:relative; transition:transform .16s; }
+.sparkline .bar:hover { transform:translateY(-6px); box-shadow:0 10px 22px rgba(34,34,60,0.12); }
+.sparkline .bar-day { position:absolute; bottom:-18px; left:50%; transform:translateX(-50%); font-size:11px; color:var(--muted-2); }
+
+/* Map element */
+#map { width:100%; height:480px; border-radius:12px; border:1px solid var(--border); }
+
+/* Footer */
+.app-footer { margin-top:28px; color:var(--muted-2); font-size:13px; text-align:center; padding:18px 0; }
+
+/* Utilities */
+.row { display:flex; gap:12px; align-items:center; }
+.kv { color:var(--muted-2); font-size:13px; }
+
+/* Responsive */
+@media (max-width: 1080px) {
+  .content-layout { grid-template-columns: 1fr; }
+  #map { height:360px; }
+  .sidebar-panel { position: static; }
+}
+@media (max-width: 640px) {
+  .dashboard-tiles { grid-template-columns:1fr; }
+  .hero h2 { font-size:20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
