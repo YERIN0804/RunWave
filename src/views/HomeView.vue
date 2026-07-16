@@ -12,8 +12,12 @@
           <button class="nav-link" @click="scrollTo('top')">🏠 홈</button>
           <button class="nav-link" @click="scrollTo('courses')">🗺️ 코스 추천</button>
           <button class="nav-link" @click="scrollTo('community')">👥 러닝 크루</button>
+          <button class="nav-link" @click="scrollTo('marathon-calendar')">
+  📅 마라톤 일정
+</button>
           <button class="nav-link" @click="scrollTo('hall')">🏆 명예의 전당</button>
           <button class="nav-link" @click="scrollTo('records')">📊 내 기록</button>
+          
         </nav>
       </div>
     </header>
@@ -26,7 +30,7 @@
     <!-- 왼쪽 메인 영역 -->
     <section id="courses" class="map-panel fade-in-up" :class="{ 'map-panel--large': mapLarge }">
       <div class="panel-top">
-        <div class="panel-header">
+        <div class="panel-header">  
           <div class="badge-running">🔥 부산 러닝 라이프</div>
           <h2>부산의 파도를 따라, RunWave</h2>
           <p class="panel-copy">
@@ -38,7 +42,8 @@
   </div>
 
       <CourseList :courses="courses" :selectedId="selectedCourse?.id" @select="selectCourse" />
-      
+
+
 <div v-if="selectedCourse" class="course-summary">
     <div class="course-info">
       <div class="course-meta">
@@ -212,6 +217,13 @@
     </aside>
   </div> <!-- content-layout 닫힘 -->
 
+          <section
+      id="marathon-calendar"
+      class="marathon-area"
+    >
+      <MarathonDday :marathons="marathons" />
+      <MarathonCalendar :marathons="marathons" />
+    </section>
   <RunChat />
 </main>
 
@@ -243,6 +255,9 @@ import WeatherDashBoard from '../components/WeatherDashBoard.vue';
 import { getStats, getLogs, appendLog } from '../utils/rankingStorage';
 import { initialRankings } from '../data/rankingDummy';
 import { loadRunningCourses } from '../utils/courseBuilder'; // 추가
+import MarathonDday from "../components/MarathonDday.vue";
+import MarathonCalendar from "../components/MarathonCalendar.vue";
+import { getMarathons } from "../services/marathonApi";
 
 // 게시글 서비스 (로컬스토리지)
 import { getPosts } from '../services/postService.js';
@@ -275,11 +290,42 @@ onMounted(async () => {
   courses.value = await loadRunningCourses();
   selectedCourse.value = courses.value[0] || null;
   loadPosts();
+ const apiData = await getMarathons();
+
+marathons.value = apiData.map((item, index) => ({
+  id: index + 1,
+  title: item["대회명"].replace(/20\d{2}/g, "2026"),
+  date: item["대회일시"].replace(/^20\d{2}/, "2026"),
+  location: item["대회장소"],
+  distances: item["종목"]
+    ? item["종목"].split(",").map((distance) => distance.trim())
+    : [],
+  status: "대회 정보",
+  color: index % 3 === 0 ? "green" : index % 3 === 1 ? "blue" : "orange",
+  emoji: "🏃",
+  url: "",
+}));
+
+marathons.value.unshift({
+  id: "ssafy-marathon-2026",
+  title: "2026 SSAFY 마라톤대회",
+  date: "2026-07-25",
+  location: "SSAFY 부울경캠퍼스",
+  distances: ["3km", "5km", "10km"],
+  status: "참가 모집중",
+  color: "blue",
+  emoji: "🏃",
+  url: "",
+});
+
+console.log(marathons.value);
+
 });
 onBeforeUnmount(() => window.removeEventListener('hashchange', updateHash));
 
 // courses / map
 const courses = ref([]);
+const marathons = ref([]);
 const selectedCourse = ref(null); // 이 부분이 빠져있으면 오류 발생
 
 function selectCourse(course){
