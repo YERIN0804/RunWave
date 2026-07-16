@@ -28,16 +28,24 @@ const relayout = () => {
   }
 };
 
-// 3. large 상태 변경 감지
-watch(() => props.large, () => {
-  // CSS transition(0.3s)이 끝날 시간을 고려하여 relayout 실행
-  setTimeout(relayout, 350); 
-});
+const applyBounds = () => {
+  if (currentPolyline.value) {
+    const path = currentPolyline.value.getPath();
+    if (path.length > 0) {
+      const bounds = new kakao.maps.LatLngBounds();
+      path.forEach(p => bounds.extend(p));
+      map.value.setBounds(bounds);
+    }
+  }
+};
 
-// 4. 노출할 함수들을 하나로 합쳐서 한 번만 호출
-defineExpose({ 
-  relayout,
-  // 기존 invalidateSize가 필요하다면 여기서 함께 노출
+watch(() => props.large, () => {
+  setTimeout(() => {
+    if (map.value) {
+      map.value.relayout(); // 레이아웃 재계산
+      applyBounds();        // 영역에 맞게 지도 재조정
+    }
+  }, 350); 
 });
 
 const clearMarkers = () => {
@@ -91,6 +99,8 @@ const drawRoute = (pathPositions, course) => {
     pathPositions.forEach(p => bounds.extend(p));
     map.value.setBounds(bounds);
   }
+
+  applyBounds();
 };
 
 const initMap = () => {

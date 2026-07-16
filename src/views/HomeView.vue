@@ -338,23 +338,34 @@ const weekLabels = computed(() => {
 
 const weekdayNames = ['월', '화', '수', '목', '금', '토', '일'];
 
+// [수정된] weekBars 로직
 const weekBars = computed(() => {
-const now = new Date();
-const arr = Array(7).fill(0);
-for (let i = 0; i < 7; i++) {
-const d = new Date(now);
-d.setDate(now.getDate() - (6 - i));
-const key = d.toISOString().slice(0, 10);
-const weekdayIndex = (d.getDay() + 6) % 7; // Mon=0 ... Sun=6
-arr[weekdayIndex] = logs.value
-.filter(l => l.date === key)
-.reduce((s, it) => s + Number(it.distance || 0), 0);
-}
-return arr;
+  const now = new Date();
+  // 오늘을 기준으로 이번 주 월요일이 언제인지 계산
+  const day = now.getDay(); // 0(일)~6(토)
+  const diff = (day === 0 ? 6 : day - 1); // 월요일을 0으로 만드는 보정값
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - diff);
+
+  const arr = Array(7).fill(0);
+  
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    
+    // 해당 날짜(key)에 맞는 로그 거리 합산
+    arr[i] = logs.value
+      .filter(l => l.date === key)
+      .reduce((s, it) => s + Number(it.distance || 0), 0);
+  }
+  return arr;
 });
 
+// [수정된] todayIndex
 const todayIndex = computed(() => {
-return (new Date().getDay() + 6) % 7;
+  const day = new Date().getDay();
+  return (day === 0 ? 6 : day - 1); // 일요일이면 6, 아니면 day-1
 });
 
 const maxWeekBar = computed(() => Math.max(...weekBars.value, 1));
