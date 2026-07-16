@@ -1,0 +1,40 @@
+# Node.js LTS 환경에서 빌드를 진행합니다.
+image: node:20
+
+# 파이프라인 단계 정의 (빌드 -> 배포)
+stages:
+  - build
+  - deploy
+
+# 1. 빌드 단계
+build_job:
+  stage: build
+  script:
+    # GitLab Variables에 등록하신 5개 환경변수를 기반으로 임시 .env 파일을 만듭니다.
+    - echo "VITE_KAKAO_MAP_KEY=$VITE_KAKAO_MAP_KEY" >> .env
+    - echo "VITE_OPENAI_API_KEY=$VITE_OPENAI_API_KEY" >> .env
+    - echo "VITE_OPENAI_MODEL=$VITE_OPENAI_MODEL" >> .env
+    - echo "VITE_OPENWEATHER_API_KEY=$VITE_OPENWEATHER_API_KEY" >> .env
+    - echo "VITE_TMAP_APP_KEY=$VITE_TMAP_APP_KEY" >> .env
+    
+    # 패키지 설치 및 프로덕션 빌드
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - dist/  # 빌드 결과물이 저장되는 폴더
+    expire_in: 1 week
+
+# 2. 배포 단계 (예: GitLab Pages로 배포할 경우)
+# 만약 Netlify를 사용하시고 GitLab Repository 연동 배포 설정을 마치셨다면, 
+# 아래 pages 단계는 작성하지 않으셔도 Netlify가 알아서 가져갑니다!
+# pages:
+#   stage: deploy
+#   script:
+#     # GitLab Pages는 public 폴더의 정적 파일을 배포하므로 dist를 public으로 이동합니다.
+#     - mv dist public  
+#   artifacts:
+#     paths:
+#       - public
+#   only:
+#     - master  # 배포를 실행할 타겟 브랜치 (master 혹은 main)

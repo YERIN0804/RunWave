@@ -58,13 +58,38 @@
       </div>
 
       <section id="community" class="community-section">
-        <BoardWrite v-if="currentHash === '#/write'" />
-        <BoardDetail v-else-if="currentHash.startsWith('#/post/')" />
-        <BoardEdit v-else-if="currentHash.startsWith('#/edit/')" />
-        <BoardList v-else />
-      </section>
-    </section>
 
+  <Transition
+    name="community-page"
+    mode="out-in"
+    appear
+  >
+
+    <BoardWrite
+      v-if="currentHash === '#/write'"
+      key="write"
+    />
+
+    <BoardDetail
+      v-else-if="currentHash.startsWith('#/post/')"
+      key="detail"
+    />
+
+    <BoardEdit
+      v-else-if="currentHash.startsWith('#/edit/')"
+      key="edit"
+    />
+
+    <BoardList
+      v-else
+      key="list"
+    />
+
+  </Transition>
+
+</section>
+
+</section>
     <!-- 오른쪽 사이드바 영역 -->
     <aside class="sidebar-panel">
       <!-- 날씨 카드 -->
@@ -198,8 +223,13 @@
 
 <script setup>
 import '../styles/board.css';
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick
+} from 'vue';
 
 import BoardList from '../components/BoardList.vue';
 import BoardWrite from '../components/BoardWrite.vue';
@@ -887,5 +917,44 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
+}
+/* 커뮤니티 목록, 작성, 상세, 수정 화면 전환 */
+.community-section {
+  position: relative;
+}
+
+.community-page-enter-active,
+.community-page-leave-active {
+  transition:
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.community-page-enter-from {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.community-page-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.community-page-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.community-page-leave-to {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-page-enter-active,
+  .community-page-leave-active {
+    transition: none;
+  }
 }
 </style>
