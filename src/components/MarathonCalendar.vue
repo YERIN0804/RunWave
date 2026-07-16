@@ -1,13 +1,81 @@
 <script setup>
+import { computed, ref } from "vue";
+
+const props = defineProps({
+  marathons: {
+    type: Array,
+    default: () => [],
+  },
+});
+
 const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
-const days = [
-  "", "", "", 1, 2, 3, 4,
-  5, 6, 7, 8, 9, 10, 11,
-  12, 13, 14, 15, 16, 17, 18,
-  19, 20, 21, 22, 23, 24, 25,
-  26, 27, 28, 29, 30, 31, ""
-];
+// 현재 보이는 달
+const currentDate = ref(new Date(2026, 6, 1)); // 2026년 7월
+
+// 화면에 표시할 연도
+const currentYear = computed(() => currentDate.value.getFullYear());
+
+// 화면에 표시할 월
+const currentMonth = computed(() => currentDate.value.getMonth());
+
+// 제목: 2026년 7월
+const monthTitle = computed(() => {
+  return `${currentYear.value}년 ${currentMonth.value + 1}월`;
+});
+
+// 이전 달 버튼
+const goPrevMonth = () => {
+  currentDate.value = new Date(
+    currentYear.value,
+    currentMonth.value - 1,
+    1
+  );
+};
+
+// 다음 달 버튼
+const goNextMonth = () => {
+  currentDate.value = new Date(
+    currentYear.value,
+    currentMonth.value + 1,
+    1
+  );
+};
+
+// 해당 월의 달력 날짜 만들기
+const calendarDays = computed(() => {
+  const year = currentYear.value;
+  const month = currentMonth.value;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  const days = [];
+
+  // 달력 앞쪽 빈칸
+  for (let i = 0; i < firstDay; i++) {
+    days.push(null);
+  }
+
+  // 실제 날짜
+  for (let day = 1; day <= lastDate; day++) {
+    days.push(day);
+  }
+
+  return days;
+});
+
+// 특정 날짜에 열리는 마라톤 찾기
+const getMarathonsForDay = (day) => {
+  if (!day) return [];
+
+  const dateKey =
+    `${currentYear.value}-` +
+    `${String(currentMonth.value + 1).padStart(2, "0")}-` +
+    `${String(day).padStart(2, "0")}`;
+
+  return props.marathons.filter((marathon) => marathon.date === dateKey);
+};
 </script>
 
 <template>
@@ -15,10 +83,16 @@ const days = [
     <div class="calendar-header">
       <h2>📅 마라톤 일정 캘린더</h2>
 
-      <div class="month-title">
-        <button type="button">‹</button>
-        <strong>2026년 7월</strong>
-        <button type="button">›</button>
+      <div class="month-control">
+        <button type="button" @click="goPrevMonth">
+          ‹
+        </button>
+
+        <strong>{{ monthTitle }}</strong>
+
+        <button type="button" @click="goNextMonth">
+          ›
+        </button>
       </div>
     </div>
 
@@ -34,13 +108,28 @@ const days = [
 
     <div class="calendar-grid">
       <div
-        v-for="(day, index) in days"
+        v-for="(day, index) in calendarDays"
         :key="index"
         class="calendar-day"
+        :class="{ empty: !day }"
       >
-        <span v-if="day">
+        <span v-if="day" class="day-number">
           {{ day }}
         </span>
+
+        <div
+          v-if="day"
+          class="event-list"
+        >
+          <div
+            v-for="marathon in getMarathonsForDay(day)"
+            :key="marathon.id"
+            class="event-item"
+            :title="marathon.title"
+          >
+            🏃 {{ marathon.title }}
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -65,17 +154,17 @@ const days = [
 
 .calendar-header h2 {
   margin: 0;
-  font-size: 21px;
   color: #172033;
+  font-size: 21px;
 }
 
-.month-title {
+.month-control {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.month-title button {
+.month-control button {
   width: 34px;
   height: 34px;
   border: 1px solid #dbeafe;
@@ -86,7 +175,11 @@ const days = [
   cursor: pointer;
 }
 
-.month-title strong {
+.month-control button:hover {
+  background: #eff6ff;
+}
+
+.month-control strong {
   min-width: 110px;
   color: #172033;
   text-align: center;
@@ -115,24 +208,50 @@ const days = [
 }
 
 .calendar-day {
-  min-height: 78px;
-  padding: 10px;
+  min-height: 95px;
+  padding: 9px;
   border-top: 1px solid #e5edf8;
   border-right: 1px solid #e5edf8;
   background: #ffffff;
-  color: #334155;
+  overflow: hidden;
 }
 
-.calendar-day:nth-child(7n + 1) {
+.calendar-day.empty {
+  background: #fafcff;
+}
+
+.calendar-day:nth-child(7n + 1) .day-number {
   color: #ef4444;
 }
 
-.calendar-day:nth-child(7n) {
+.calendar-day:nth-child(7n) .day-number {
   color: #2563eb;
 }
 
-.calendar-day:hover {
-  background: #f8fbff;
+.day-number {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-item {
+  overflow: hidden;
+  padding: 5px 6px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 700px) {
@@ -143,9 +262,12 @@ const days = [
   }
 
   .calendar-day {
-    min-height: 58px;
-    padding: 7px;
-    font-size: 13px;
+    min-height: 70px;
+    padding: 6px;
+  }
+
+  .event-item {
+    font-size: 9px;
   }
 }
 </style>

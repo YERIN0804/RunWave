@@ -1,6 +1,12 @@
 <script setup>
 import { computed } from "vue";
-import { marathons } from "../data/marathons";
+
+const props = defineProps({
+  marathons: {
+    type: Array,
+    default: () => [],
+  },
+});
 
 const calculateDday = (dateString) => {
   const today = new Date();
@@ -31,7 +37,7 @@ const upcomingMarathons = computed(() => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  return [...marathons]
+  return [...props.marathons]
     .filter((marathon) => {
       const eventDate = new Date(`${marathon.date}T00:00:00`);
       return eventDate >= today;
@@ -55,9 +61,6 @@ const openMarathonPage = (url) => {
         <p>부산에서 열리는 마라톤 일정을 확인하고 함께 준비해요!</p>
       </div>
 
-      <button type="button" class="schedule-button">
-        전체 일정 보기 ›
-      </button>
     </div>
 
     <div class="marathon-list">
