@@ -432,6 +432,29 @@ function apply(id){ alert('참여 신청(더미) - id: '+id); }
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   padding: 12px 0; /* 상하 패딩을 살짝 줄임 */
 }
+/* 로고 텍스트 스타일 */
+.brand-text h1 {
+  font-family: 'Pretendard', sans-serif; /* 굵은 산세리프 폰트 */
+  font-weight: 900;
+  font-size: 1.8rem;
+  letter-spacing: -1px;
+  background: linear-gradient(90deg, #1e88ff 0%, #67b7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* W 파도 효과 */
+.wave-letter {
+  display: inline-block;
+  animation: wave 2s infinite ease-in-out;
+}
+
+@keyframes wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
 
 .header-inner {
   max-width: 1200px; /* 너비를 늘려 브랜드가 왼쪽으로 더 이동하게 함 */
